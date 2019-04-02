@@ -1,0 +1,32 @@
+{
+  "name": "open-traffic-lights-predicition",
+  "version": "0.0.1",
+  "description": "Predicting phase durations of dynamically programmed traffic lights from OpenTrafficLights",
+  "main": "data_reader.js",
+  "dependencies": {
+    "event-stream": "^4.0.1",
+    "ldfetch": "^1.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kridhaen/OpenTrafficLightsPredition.git"
+  },
+  "keywords": [
+    "open",
+    "traffic",
+    "lights",
+    "prediction",
+    "phase",
+    "duration"
+  ],
+  "author": "kridhaen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kridhaen/OpenTrafficLightsPredition/issues"
+  },
+  "homepage": "https://github.com/kridhaen/OpenTrafficLightsPredition#readme"
+}
