@@ -9,8 +9,7 @@ class FragmentConverter{
     constructor(){
         this.lastPreviousUrl = null;
         this.lastLatest = "0";
-        this.readAndParse = this.readAndParse.bind(this);
-        this.readFiles = this.readFiles.bind(this);
+        this.readAndParseSync = this.readAndParseSync.bind(this);
         this.parseAndStoreQuads = this.parseAndStoreQuads.bind(this);
     }
 
@@ -26,38 +25,6 @@ class FragmentConverter{
             });
         })
     }
-
-    //async ------unused-------------------------------------------------------------------
-    async readAndParse(){
-        let temp = this;
-        console.log("reading");
-        this.files = undefined;
-        fs.readdir("./previous", function(err, files){
-            if(err){
-                console.log(err);
-            }
-            console.log("read dir");
-            let i = 0;
-            temp.readFiles(files, 0);
-
-        });                
-    }
-
-    readFiles(files, index){
-        let temp = this;
-        if(index != files.length){
-            fs.readFile("./previous/"+files[index], async function(err, data) {
-                if(err){
-                    console.log(err);
-                }
-                console.log("\x1b[36m","read file "+index,"\x1b[0m");
-                temp.readFiles(files, ++index);
-                //let store = await temp.parseAndStoreQuads(data);
-                console.log(data);
-            });
-        }
-    }
-    //------------------------------------------------------------------------------------
 
     readAndParseSync(){
         //let writeStream = fs.createWriteStream("output.csv");
@@ -76,6 +43,7 @@ class FragmentConverter{
             //console.log("\x1b[31m","read dir","\x1b[0m");
             let i = 0;
             for(let file of files.sort()){  //alle files overlopen, gesorteerd volgens naam, wat overeenkomt met de datum, oudste eerst
+                if(i++%100 === 0) FragmentConverter.showProgress(i, files.length, "files");
                 let data = fs.readFileSync("./previous/"+file);
                 let store = await temp.parseAndStoreQuads(data.toString());
                 //console.log("\x1b[31m","read file","\x1b[0m");
@@ -155,7 +123,7 @@ class FragmentConverter{
                                 }
                             }
 
-                            let output = signalGroup+","+generatedAtTime+","+minEndTime+","+maxEndTime+","+signalPhase+","+phaseDuration; //csv output
+                            //let output = signalGroup+","+generatedAtTime+","+minEndTime+","+maxEndTime+","+signalPhase+","+phaseDuration; //csv output
                             //console.log(output);
                         }
                     });
@@ -164,24 +132,55 @@ class FragmentConverter{
 
 
                 
-                FragmentConverter.printDistributions(frequencyDistribution); //voor file
+                //FragmentConverter.printDistributions(frequencyDistribution); //voor file
                 //console.log(data.toString());
             }
             //console.log("\x1b[31m","read complete","\x1b[0m");
-            FragmentConverter.printDistributions(frequencyDistribution);
+            FragmentConverter.printToFile(FragmentConverter.createDistributionsCSV(frequencyDistribution),'csvdata.csv');
         }); 
     }
 
-    static printDistributions(distributions){
-        console.log(distributions);
+
+
+    static createDistributionsCSV(distributions){
+        let output = [];
+        Object.keys(distributions).forEach((signalGroup) => {
+            Object.keys(distributions[signalGroup]).forEach((signalPhase) => {
+                let file = "signalGroup,signalphase,duration,amount\n";
+                Object.keys(distributions[signalGroup][signalPhase]).forEach((duration) => {
+                    file += signalGroup+','+signalPhase+','+duration+','+distributions[signalGroup][signalPhase][duration]+'\n';
+                });
+                output.push(file);
+            });
+        });
+        return output;
+    }
+
+    static printToFile(data, filename){
+        if(Array.isArray(data)){
+            let count = 0;
+            data.forEach((item) => {
+                fs.writeFile(count++ + filename, item,'utf8', (err) => {
+                    if(err) throw err;
+                    console.log('File saved!');
+                });
+            });
+        }
+        else{
+            fs.writeFile(filename, data,'utf8', (err) => {
+                if(err) throw err;
+                console.log('File saved!');
+            });
+        }
+    }
+
+    static showProgress(current,maximum,description){
+        console.log("Running: "+" "+description+": "+current+"/"+maximum);
     }
 
 
     start(){
         this.readAndParseSync();
-        // setInterval(() => {
-        //     console.log("...............running:"+Date.now()+"...............");
-        // }, 10000);
     }
 
 }
