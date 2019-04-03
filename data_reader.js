@@ -1,5 +1,7 @@
 const fs = require('fs');
 const n3 = require('n3');
+const FrequencyDistribution = require("./Prediction/FrequencyDistribution.js");
+const TimeFrequencyDistribution = require('./Prediction/TimeFrequencyDistribution.js');
 
 const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
@@ -31,7 +33,8 @@ class FragmentConverter{
 
         let phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
         let lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
-        let frequencyDistribution = {}; //frequentieverdeling voor alle verschillende sighaalgroepen
+        let timeFrequencyDistribution = new TimeFrequencyDistribution();
+        let frequencyDistribution = new FrequencyDistribution();
 
         let temp = this;
         //console.log("\x1b[31m","reading","\x1b[0m");
@@ -55,7 +58,6 @@ class FragmentConverter{
                     if(!phaseStart[quad.subject.value]){
                         phaseStart[quad.subject.value] = -1;
                         lastPhase[quad.subject.value] = -1;
-                        frequencyDistribution[quad.subject.value] = {};
                     }
                 });
 
@@ -70,7 +72,6 @@ class FragmentConverter{
                 }
                 ).forEach((observation) => {
                     let generatedAtTime = observation.object.value;
-                    //console.log(generatedAtTime);
 
                     signalGroups.forEach(signalGroup => {
                         let signalState = store.getQuads(namedNode(signalGroup), namedNode('https://w3id.org/opentrafficlights#signalState'), null, observation.subject)[0]; //zit altijd 1 of geen in, als de signalstate is aangepast op generatedAtTime voor de opgegeven signalgroup
@@ -84,7 +85,7 @@ class FragmentConverter{
                             observationUTC["hour"] = generatedAtTimeDate.getUTCHours();
                             observationUTC["month"] = generatedAtTimeDate.getUTCMonth();
                             observationUTC["minute"] = generatedAtTimeDate.getUTCMinutes();
-                            observationUTC["day"] = generatedAtTimeDate.getUTCDay();
+                            observationUTC["day"] = generatedAtTimeDate.getUTCDay();    //0 == sunday
                             observationUTC["year"] = generatedAtTimeDate.getUTCFullYear();
 
                             let phaseDuration = -1;
@@ -95,18 +96,11 @@ class FragmentConverter{
 
 
                                     //opslaan in tabel frequentieverdeling
-                                    if(!frequencyDistribution[signalGroup][lastPhase[signalGroup]]){
-                                        frequencyDistribution[signalGroup][lastPhase[signalGroup]] = {}; //lijst aanmaken voor bijhouden van aantal voorkomen voor iedere faseduur
-                                    }
-                                    else{
-                                        if(frequencyDistribution[signalGroup][lastPhase[signalGroup]][Math.round(phaseDuration/1000)]){ //afgeronde duur op aantal seconden
-                                            frequencyDistribution[signalGroup][lastPhase[signalGroup]][Math.round(phaseDuration/1000)]++;   //voorkomen tellen 
-                                        }
-                                        else{
-                                            frequencyDistribution[signalGroup][lastPhase[signalGroup]][Math.round(phaseDuration/1000)] = 1;
-                                        }
-                                    }
-                                    
+                                    frequencyDistribution.add(signalGroup, lastPhase[signalGroup], Math.round(phaseDuration/1000));
+
+                                    //opslaan in frequentieverdeling op tijdstippen gesplitst
+                                    let temp = Math.floor(observationUTC["minute"]/20)*20;
+                                    timeFrequencyDistribution.add(signalGroup, lastPhase[signalGroup], observationUTC["year"], observationUTC["month"], observationUTC["day"], observationUTC["hour"], Math.floor(observationUTC["minute"]/20)*20, Math.round(phaseDuration/1000));
                                     
                                     //klaarzetten voor volgende fase
                                     lastPhase[signalGroup] = signalPhase;
@@ -122,45 +116,25 @@ class FragmentConverter{
                                     phaseStart[signalGroup] = generatedAtTime;
                                 }
                             }
-
-                            //let output = signalGroup+","+generatedAtTime+","+minEndTime+","+maxEndTime+","+signalPhase+","+phaseDuration; //csv output
-                            //console.log(output);
                         }
                     });
 
                 });
-
-
-                
-                //FragmentConverter.printDistributions(frequencyDistribution); //voor file
-                //console.log(data.toString());
             }
-            //console.log("\x1b[31m","read complete","\x1b[0m");
-            FragmentConverter.printToFile(FragmentConverter.createDistributionsCSV(frequencyDistribution),'csvdata.csv');
+            console.log("\x1b[31m","read complete","\x1b[0m");
+            let a = frequencyDistribution.createDistributionsCSV();
+            let b = timeFrequencyDistribution.createDistributionsCSV();
+            console.log(a + b);
+            FragmentConverter.printToFile(timeFrequencyDistribution.createDistributionsCSV(),"./csv_data/time_csv_data_",".csv");
+            FragmentConverter.printToFile(frequencyDistribution.createDistributionsCSV(),"./csv_data/csv_data_",".csv");
         }); 
     }
 
-
-
-    static createDistributionsCSV(distributions){
-        let output = [];
-        Object.keys(distributions).forEach((signalGroup) => {
-            Object.keys(distributions[signalGroup]).forEach((signalPhase) => {
-                let file = "signalGroup,signalphase,duration,amount\n";
-                Object.keys(distributions[signalGroup][signalPhase]).forEach((duration) => {
-                    file += signalGroup+','+signalPhase+','+duration+','+distributions[signalGroup][signalPhase][duration]+'\n';
-                });
-                output.push(file);
-            });
-        });
-        return output;
-    }
-
-    static printToFile(data, filename){
+    static printToFile(data, filename, extension){
         if(Array.isArray(data)){
             let count = 0;
             data.forEach((item) => {
-                fs.writeFile(count++ + filename, item,'utf8', (err) => {
+                fs.writeFile(filename + count++ + extension, item,'utf8', (err) => {
                     if(err) throw err;
                     console.log('File saved!');
                 });
