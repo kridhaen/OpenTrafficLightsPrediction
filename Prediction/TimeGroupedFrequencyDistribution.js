@@ -37,7 +37,7 @@ class TimeGroupedFrequencyDistribution {
                 Object.keys(this.frequencyDistribution[signalGroup][signalPhase]).forEach((isWeekend) => {
                     Object.keys(this.frequencyDistribution[signalGroup][signalPhase][isWeekend]).forEach((hour) => {
 
-                        let file = "signalGroup,signalphase,year,month,day,hour,minutes,duration,amount\n";
+                        let file = "signalGroup,signalphase,isWeekend,hour,duration,amount\n";
                         Object.keys(this.frequencyDistribution[signalGroup][signalPhase][isWeekend][hour]).forEach((duration) => {
                             file += signalGroup+','+signalPhase+','+isWeekend+','+hour+','+duration+','+this.frequencyDistribution[signalGroup][signalPhase][isWeekend][hour][duration]+'\n';
                         });
