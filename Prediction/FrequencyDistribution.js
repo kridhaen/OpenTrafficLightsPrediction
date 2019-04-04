@@ -18,6 +18,10 @@ class FrequencyDistribution{
         }
     }
 
+    getDistributions(){
+        return this.frequencyDistribution;
+    }
+
     createDistributionsCSV(){
         let output = [];
         Object.keys(this.frequencyDistribution).forEach((signalGroup) => {

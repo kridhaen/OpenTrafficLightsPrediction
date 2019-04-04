@@ -1,3 +1,7 @@
 previous/
 node_modules/
 .idea/
+time_csv_data/
+time_grouped_csv_data/
+csv_data/
+Results/

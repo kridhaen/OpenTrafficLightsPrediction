@@ -128,6 +128,11 @@ class FragmentConverter{
             FragmentConverter.printToFile(frequencyDistribution.createDistributionsCSV(),"./csv_data/csv_data_",".csv");
             FragmentConverter.printToFile(timeGroupedFrequencyDistribution.createDistributionsCSV(),"./time_grouped_csv_data/csv_data_",".csv");
             FragmentConverter.printToFileSync(timeFrequencyDistribution.createDistributionsCSV(),"./time_csv_data/time_csv_data_",".csv");
+
+            FragmentConverter.printToFileSync(JSON.stringify(timeGroupedFrequencyDistribution.getDistributions()), "timeGroupedFrequencyDistribution",".json");
+            FragmentConverter.printToFileSync(JSON.stringify(timeFrequencyDistribution.getDistributions()), "timeFrequencyDistribution",".json");
+            FragmentConverter.printToFileSync(JSON.stringify(frequencyDistribution.getDistributions()), "frequencyDistribution",".json");
+
         }); 
     }
 
@@ -142,7 +147,7 @@ class FragmentConverter{
             });
         }
         else{
-            fs.writeFile(filename, data,'utf8', (err) => {
+            fs.writeFile(filename + extension, data,'utf8', (err) => {
                 if(err) throw err;
                 console.log('File saved!');
             });
@@ -157,7 +162,7 @@ class FragmentConverter{
             });
         }
         else{
-            fs.writeFile(filename, data,'utf8');
+            fs.writeFile(filename + extension, data,'utf8');
         }
     }
 
