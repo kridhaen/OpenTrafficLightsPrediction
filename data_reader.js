@@ -136,7 +136,7 @@ class FragmentConverter{
         }); 
     }
 
-    static printToFile(data, filename, extension){
+    static printToFile(data, filename, extension){  //let op concurrent fd open
         if(Array.isArray(data)){
             let count = 0;
             data.forEach((item) => {
