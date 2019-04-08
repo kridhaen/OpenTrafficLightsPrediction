@@ -10,6 +10,10 @@ class DistributionStore{
     get(name){
         return this.distributions[name];
     }
+
+    getNames(){
+        return this.distributions.keys();
+    }
 }
 
 module.exports = DistributionStore;
