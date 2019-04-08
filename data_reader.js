@@ -1,8 +1,9 @@
 const fs = require('fs');
 const n3 = require('n3');
-const FrequencyDistribution = require("./Prediction/FrequencyDistribution.js");
-const TimeFrequencyDistribution = require('./Prediction/TimeFrequencyDistribution.js');
-const TimeGroupedFrequencyDistribution = require('./Prediction/TimeGroupedFrequencyDistribution.js');
+const FrequencyDistribution = require("./Distributions/FrequencyDistribution.js");
+const TimeFrequencyDistribution = require('./Distributions/TimeFrequencyDistribution.js');
+const TimeGroupedFrequencyDistribution = require('./Distributions/TimeGroupedFrequencyDistribution.js');
+const DistributionStore = require('./Distributions/DistributionStore.js');
 
 
 const { DataFactory } = n3;
@@ -28,7 +29,7 @@ class FragmentConverter{
         })
     }
 
-    readAndParseSync(){
+    readAndParseSync(distributionStore){
         //let writeStream = fs.createWriteStream("output.csv");
 
         let phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
@@ -133,6 +134,10 @@ class FragmentConverter{
             FragmentConverter.printToFileSync(JSON.stringify(timeFrequencyDistribution.getDistributions()), "timeFrequencyDistribution",".json");
             FragmentConverter.printToFileSync(JSON.stringify(frequencyDistribution.getDistributions()), "frequencyDistribution",".json");
 
+            distributionStore.add(frequencyDistribution, "fd");
+            distributionStore.add(timeFrequencyDistribution, "tfd");
+            distributionStore.add(timeGroupedFrequencyDistribution, "tgfd");
+
         }); 
     }
 
@@ -169,13 +174,5 @@ class FragmentConverter{
     static showProgress(current,maximum,description){
         console.log("Running: "+" "+description+": "+current+"/"+maximum);
     }
-
-
-    start(){
-        this.readAndParseSync();
-    }
-
 }
 
-let fragmentConverter = new FragmentConverter();
-fragmentConverter.start();
