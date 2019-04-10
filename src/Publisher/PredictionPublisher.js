@@ -12,7 +12,7 @@ class PredictionPublisher{
     }
 
     start(){
-        this.app.listen(this.port, () => console.log(`Publisher listening on port ${port}`));
+        this.app.listen(this.port, () => console.log(`Publisher listening on port ${this.port}`));
     }
 }
 
