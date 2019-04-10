@@ -10,3 +10,5 @@ class PredictionCalculator{
     }
 
 }
+
+module.exports = PredictionCalculator;
