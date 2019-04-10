@@ -9,7 +9,7 @@ const DistributionStore = require('./Distributions/DistributionStore.js');
 const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
-
+//read fragments from file system /previous folder and save distribution to csv and json
 class FragmentConverter{
     constructor(){
         this.readAndParseSync = this.readAndParseSync.bind(this);
