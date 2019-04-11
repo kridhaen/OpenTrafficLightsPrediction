@@ -13,7 +13,6 @@ const { namedNode, literal, defaultGraph, quad } = DataFactory;
 class HistoricFileSystemReader{
     constructor(){
         this.readAndParseSync = this.readAndParseSync.bind(this);
-        this.parseAndStoreQuads = this.parseAndStoreQuads.bind(this);
     }
 
     readAndParseSync(distributionStore){
