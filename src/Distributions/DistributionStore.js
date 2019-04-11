@@ -12,7 +12,7 @@ class DistributionStore{
     }
 
     getNames(){
-        return this.distributions.keys();
+        return Object.keys(this.distributions);
     }
 }
 
