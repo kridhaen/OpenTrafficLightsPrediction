@@ -1,3 +1,10 @@
+const https = require("https");
+const fetch = require('node-fetch');
+const axios = require('axios');
+
+//TODO: delete unused version
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 class Downloader{
     static download(_url){
         return new Promise((resolve,reject) => {

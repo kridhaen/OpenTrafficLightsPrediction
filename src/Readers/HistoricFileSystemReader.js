@@ -3,6 +3,7 @@ const n3 = require('n3');
 const FrequencyDistribution = require("../Distributions/FrequencyDistribution.js");
 const TimeFrequencyDistribution = require('../Distributions/TimeFrequencyDistribution.js');
 const TimeGroupedFrequencyDistribution = require('../Distributions/TimeGroupedFrequencyDistribution.js');
+const Helper = require('./Helper');
 
 
 const { DataFactory } = n3;
@@ -13,19 +14,6 @@ class HistoricFileSystemReader{
     constructor(){
         this.readAndParseSync = this.readAndParseSync.bind(this);
         this.parseAndStoreQuads = this.parseAndStoreQuads.bind(this);
-    }
-
-    parseAndStoreQuads(_doc) {
-        return new Promise(resolve => {
-            const parser = new n3.Parser();
-            const store = new n3.Store();
-            parser.parse(_doc, (error, quad, prefixes) => {
-                if (quad)
-                    store.addQuad(quad);
-                else
-                    return resolve(store);
-            });
-        })
     }
 
     readAndParseSync(distributionStore){
@@ -50,7 +38,7 @@ class HistoricFileSystemReader{
                     let data = fs.readFileSync("./previous/"+file);
                     //console.log("\x1b[31m","read file","\x1b[0m");
                     let fragment = data.toString();
-                    let store = await temp.parseAndStoreQuads(fragment);
+                    let store = await Helper.parseAndStoreQuads(fragment);
 
                     let signalGroups = [];
 
