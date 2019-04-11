@@ -18,5 +18,3 @@ historicFileSystemReader.readAndParseSync(distributionStore)
         // let predictionPublisher = new PredictionPublisher(8080);
         // predictionPublisher.setLatestEndpoint();
     });
-
-

@@ -5,11 +5,13 @@
   "main": "data_reader.js",
   "dependencies": {
     "axios": "^0.18.0",
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "n3": "^1.0.5"
   },
   "devDependencies": {
-    "jest": "^24.7.0"
+    "jest": "^24.7.1",
+    "supertest": "^4.0.2"
   },
   "scripts": {
     "start": "node data_reader.js",

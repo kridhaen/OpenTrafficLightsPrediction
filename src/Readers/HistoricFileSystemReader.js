@@ -3,7 +3,7 @@ const n3 = require('n3');
 const FrequencyDistribution = require("../Distributions/FrequencyDistribution.js");
 const TimeFrequencyDistribution = require('../Distributions/TimeFrequencyDistribution.js');
 const TimeGroupedFrequencyDistribution = require('../Distributions/TimeGroupedFrequencyDistribution.js');
-const Helper = require('./Helper');
+const Helper = require('./Helper.js');
 
 
 const { DataFactory } = n3;

@@ -1,5 +1,5 @@
 const https = require("https");
-const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 const axios = require('axios');
 
 //TODO: delete unused version
@@ -29,18 +29,18 @@ class Downloader{
         });
     }
 
-    static download2(_url){
-        console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
-        //const caAgent = new https.Agent({ca: rootca});
-        return new Promise((resolve,reject) => {
-
-            fetch(_url, { timeout: 2000000 })
-                .then(function(response) {
-                    resolve(response.text());
-                })
-                .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
-        });
-    }
+    // static download2(_url){
+    //     console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
+    //     //const caAgent = new https.Agent({ca: rootca});
+    //     return new Promise((resolve,reject) => {
+    //
+    //         fetch(_url, { timeout: 2000000 })
+    //             .then(function(response) {
+    //                 resolve(response.text());
+    //             })
+    //             .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
+    //     });
+    // }
 
     static download1(_url){
         console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");

@@ -1,8 +1,8 @@
 const n3 = require('n3');
 
 const PredictionCalculator = require('../Predictor/PredicionCalculator.js');
-const Downloader = require('./Downloader');
-const Helper = require('./Helper');
+const Downloader = require('./Downloader.js');
+const Helper = require('./Helper.js');
 
 const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
@@ -97,7 +97,7 @@ class RealTimeReader{
                     });
 
                 });
-                this.writeN3Store(store);
+                await this.writeN3Store(store);
             }
         }
         else {
@@ -105,9 +105,14 @@ class RealTimeReader{
         }
     }
 
-    async writeN3Store(store, callback){
-        const writer = new n3.Writer(store);
-        await writer.end((error, result) => {this.predictionPublisher.setLatestEndpoint(result); console.log(result); callback(result)});
+    writeN3Store(store){
+        return new Promise(async (resolve) => {
+            const writer = new n3.Writer(store);
+            for(let quad of store.getQuads()){
+                writer.addQuad(quad);
+            }
+            await writer.end((error, result) => {this.predictionPublisher.setLatestEndpoint(result); resolve(result)});
+        });
     }
 
     getLatestCyclic(cycleTime){
