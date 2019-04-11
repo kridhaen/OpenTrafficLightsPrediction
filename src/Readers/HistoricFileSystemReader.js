@@ -34,7 +34,7 @@ class HistoricFileSystemReader{
             let lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
             let timeFrequencyDistribution = new TimeFrequencyDistribution();
             let frequencyDistribution = new FrequencyDistribution();
-            let timeGroupedFrequencyDistribution = new TimeGroupedFrequencyDistribution;
+            let timeGroupedFrequencyDistribution = new TimeGroupedFrequencyDistribution();
 
             let temp = this;
             //console.log("\x1b[31m","reading","\x1b[0m");
