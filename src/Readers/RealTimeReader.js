@@ -66,22 +66,15 @@ class RealTimeReader{
                             //TODO: voorspelling berekening
                             let likelyTime = -1;
                             if(this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1){
+                                if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
+                                    let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
+                                    likelyTime = new Date(new Date(this.phaseStart[signalGroup]) + predictedDuration).toISOString();
+                                    store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
+                                }
                                 if(this.lastPhase[signalGroup] !== signalPhase){ //faseovergang
-                                    if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-                                        let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
-                                        likelyTime = new Date(this.phaseStart[signalGroup]) + predictedDuration;
-                                        store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), likelyTime, observation.subject);
-                                    }
                                     //klaarzetten voor volgende fase
                                     this.lastPhase[signalGroup] = signalPhase;
                                     this.phaseStart[signalGroup] = generatedAtTime;
-                                }
-                                else{
-                                    if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-                                        let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
-                                        likelyTime = new Date(this.phaseStart[signalGroup]) + predictedDuration;
-                                        store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), likelyTime, observation.subject);
-                                    }
                                 }
                             }
                             else{
