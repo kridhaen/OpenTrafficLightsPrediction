@@ -29,7 +29,7 @@ it('get /latest 404 no data', () => {
         .expect(404);
 });
 
-it('get /test json endpoint', () => {
+it('get custom /test json endpoint', () => {
     let predictionPublisher = new PredictionPublisher(8080);
     predictionPublisher.setJSONDistributionEndpoint("test", JSON.stringify({"testresult":"success"}));
     expect.assertions(1);
@@ -42,7 +42,7 @@ it('get /test json endpoint', () => {
         });
 });
 
-it('get /test json endpoint 404 no data', () => {
+it('get custom /test json endpoint 404 no data', () => {
     let predictionPublisher = new PredictionPublisher(8080);
     predictionPublisher.setJSONDistributionEndpoint("test", undefined);
     expect.assertions(1);
