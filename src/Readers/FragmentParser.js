@@ -12,7 +12,7 @@ class FragmentParser{
 
 
 
-    async handleFragment(fragment, onPhaseChange, onSamePhase, beforePhaseChangeCheck){
+    async handleFragment(fragment, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle){
         let store = await Helper.parseAndStoreQuads(fragment);
 
         let signalGroups = [];
@@ -50,19 +50,23 @@ class FragmentParser{
                     observationUTC["day"] = generatedAtTimeDate.getUTCDay();    //0 == sunday
                     observationUTC["year"] = generatedAtTimeDate.getUTCFullYear();
 
-                    //TODO: voorspelling berekening
-                    let likelyTime = -1;
                     if(this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1){
-                        beforePhaseChangeCheck(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, observationUTC);
+                        if(beforePhaseChangeCheck){
+                            beforePhaseChangeCheck(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                        }
                         if(this.lastPhase[signalGroup] !== signalPhase){ //faseovergang
-                            onPhaseChange(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, observationUTC);
+                            if(onPhaseChange){
+                                onPhaseChange(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                            }
 
                             //klaarzetten voor volgende fase
                             this.lastPhase[signalGroup] = signalPhase;
                             this.phaseStart[signalGroup] = generatedAtTime;
                         }
                         else{
-                            onSamePhase(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, observationUTC);
+                            if(onSamePhase){
+                                onSamePhase(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                            }
                         }
                     }
                     else{
@@ -78,6 +82,11 @@ class FragmentParser{
             });
 
         });
+        if(afterHandle){
+            afterHandle(store);
+        }
     }
 
 }
+
+module.exports = FragmentParser;

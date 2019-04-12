@@ -8,13 +8,15 @@ const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
 class RealTimeReader{
-    constructor(distributionStore, predictionPublisher){
+    constructor(distributionStore, predictionPublisher, fragmentParser){
         this.lastLatest = undefined;
         this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
         this.phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
         this.lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
         this.distributionStore = distributionStore;
         this.predictionPublisher = predictionPublisher;
+        this.fragmentParser = fragmentParser;
+        this.afterHandle = this.afterHandle.bind(this);
     }
 
     //latest -> green, prev: blue
@@ -24,78 +26,26 @@ class RealTimeReader{
             if(latest.length != this.lastLatest.length){    //different latest
                 this.lastLatest = latest;
                 console.log("\x1b[36m","different latest","\x1b[0m");
-                //TODO: doe iets met de real-time fragmenten -> voorspelling maken en doorgeven aan publisher
-                let store = await Helper.parseAndStoreQuads(latest);
-                let signalGroups = [];
 
-                await store.getQuads(null, namedNode('http://www.w3.org/2000/01/rdf-schema#type'), namedNode('https://w3id.org/opentrafficlights#Signalgroup')).forEach(quad => {
-                    signalGroups.push(quad.subject.value);
-                    if(!this.phaseStart[quad.subject.value]){
-                        this.phaseStart[quad.subject.value] = -1;
-                        this.lastPhase[quad.subject.value] = -1;
-                    }
-                });
+                await this.fragmentParser.handleFragment(latest, undefined, undefined, this.beforePhaseChangeCheck, this.afterHandle);
 
-                //console.log(signalGroups);
-
-                //overlopen van alle observaties in een fragment, gesorteerd met oudste eerst
-                await store.getQuads(null, namedNode('http://www.w3.org/ns/prov#generatedAtTime'), null).sort(function(a, b) {
-                        a = new Date(a.object.value).getTime();
-                        b = new Date(b.object.value).getTime();
-
-                        return a<b ? -1 : a>b ? 1 : 0;
-                    }
-                ).forEach((observation) => {
-                    let generatedAtTime = observation.object.value;
-
-                    signalGroups.forEach(signalGroup => {
-                        let signalState = store.getQuads(namedNode(signalGroup), namedNode('https://w3id.org/opentrafficlights#signalState'), null, observation.subject)[0]; //zit altijd 1 of geen in, als de signalstate is aangepast op generatedAtTime voor de opgegeven signalgroup
-                        if(signalState) {
-                            let minEndTime = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#minEndTime'), null, observation.subject)[0].object.value;
-                            let maxEndTime = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#maxEndTime'), null, observation.subject)[0].object.value;
-                            let signalPhase = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#signalPhase'), null, observation.subject)[0].object.value;
-
-                            let observationUTC = {};
-                            let generatedAtTimeDate = new Date(generatedAtTime);
-                            observationUTC["hour"] = generatedAtTimeDate.getUTCHours();
-                            observationUTC["month"] = generatedAtTimeDate.getUTCMonth();
-                            observationUTC["minute"] = generatedAtTimeDate.getUTCMinutes();
-                            observationUTC["day"] = generatedAtTimeDate.getUTCDay();    //0 == sunday
-                            observationUTC["year"] = generatedAtTimeDate.getUTCFullYear();
-
-                            //TODO: voorspelling berekening
-                            let likelyTime = -1;
-                            if(this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1){
-                                if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-                                    let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
-                                    likelyTime = new Date(new Date(this.phaseStart[signalGroup]) + predictedDuration).toISOString();
-                                    store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
-                                }
-                                if(this.lastPhase[signalGroup] !== signalPhase){ //faseovergang
-                                    //klaarzetten voor volgende fase
-                                    this.lastPhase[signalGroup] = signalPhase;
-                                    this.phaseStart[signalGroup] = generatedAtTime;
-                                }
-                            }
-                            else{
-                                if(this.phaseStart[signalGroup] === -1 && this.lastPhase[signalGroup] === -1){
-                                    this.lastPhase[signalGroup] = signalPhase;
-                                }
-                                else if(this.lastPhase[signalGroup] !== signalPhase){
-                                    this.lastPhase[signalGroup] = signalPhase;
-                                    this.phaseStart[signalGroup] = generatedAtTime;
-                                }
-                            }
-                        }
-                    });
-
-                });
-                await this.writeN3Store(store);
             }
         }
         else {
             this.lastLatest = latest;
         }
+    }
+
+    beforePhaseChangeCheck(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase){
+        if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
+            let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
+            let likelyTime = new Date(new Date(phaseStart[signalGroup]) + predictedDuration).toISOString();
+            store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
+        }
+    }
+
+    async afterHandle(store){
+        await this.writeN3Store(store);
     }
 
     writeN3Store(store){
