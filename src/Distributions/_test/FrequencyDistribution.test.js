@@ -1,4 +1,4 @@
-const FrequencyDistribution = require("../FrequencyDistribution");
+const FrequencyDistribution = require("../Types/FrequencyDistribution");
 
 test('FrequencyDistribution: add', () => {
     let frequencyDistribution = new FrequencyDistribution();
