@@ -17,6 +17,7 @@ class RealTimeReader{
         this.predictionPublisher = predictionPublisher;
         this.fragmentParser = fragmentParser;
         this.afterHandle = this.afterHandle.bind(this);
+        this.beforePhaseChangeCheck = this.beforePhaseChangeCheck.bind(this);
     }
 
     //latest -> green, prev: blue
