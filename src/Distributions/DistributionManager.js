@@ -1,13 +1,25 @@
+const FrequencyDistribution = require("./Types/FrequencyDistribution.js");
+const TimeFrequencyDistribution = require('./Types/TimeFrequencyDistribution.js');
+const TimeGroupedFrequencyDistribution = require('./Types/TimeGroupedFrequencyDistribution.js');
 
 class DistributionManager{
-    static storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distrubutionStore){
-        let frequencyDistribution = distrubutionStore.get('fd');
-        let timeFrequencyDistribution = distrubutionStore.get('tfd');
-        let timeGroupedFrequencyDistribution = distrubutionStore.get('tgfd');
+    static createDistributions(distributionStore){
+        let timeFrequencyDistribution = new TimeFrequencyDistribution();
+        let frequencyDistribution = new FrequencyDistribution();
+        let timeGroupedFrequencyDistribution = new TimeGroupedFrequencyDistribution();
+
+        distributionStore.add(frequencyDistribution, "fd");
+        distributionStore.add(timeFrequencyDistribution, "tfd");
+        distributionStore.add(timeGroupedFrequencyDistribution, "tgfd");
+    }
+
+
+    static storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore){
+        let frequencyDistribution = distributionStore.get('fd');
+        let timeFrequencyDistribution = distributionStore.get('tfd');
+        let timeGroupedFrequencyDistribution = distributionStore.get('tgfd');
 
         let phaseDuration = new Date(generatedAtTime) - new Date(phaseStart[signalGroup]);
-        //console.log("date: " + generatedAtTimeDate + "   duration: " + phaseDuration+"   phase: "+lastPhase[signalGroup]+" signalGroup: "+signalGroup);
-
 
         //opslaan in tabel frequentieverdeling
         frequencyDistribution.add(signalGroup, lastPhase[signalGroup], Math.round(phaseDuration/1000));
