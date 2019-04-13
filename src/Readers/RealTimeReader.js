@@ -38,7 +38,7 @@ class RealTimeReader{
     }
 
     beforePhaseChangeCheck(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase){
-        PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, observation, phaseStart, this.distributionStore, (likelyTime) => {
+        PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, phaseStart, this.distributionStore, (likelyTime) => {
             store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
         });
     }
