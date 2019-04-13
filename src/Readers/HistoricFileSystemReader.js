@@ -1,15 +1,5 @@
 const fs = require('fs');
-const n3 = require('n3');
-const FrequencyDistribution = require("../Distributions/FrequencyDistribution.js");
-const TimeFrequencyDistribution = require('../Distributions/TimeFrequencyDistribution.js');
-const TimeGroupedFrequencyDistribution = require('../Distributions/TimeGroupedFrequencyDistribution.js');
 const DistributionManager = require('../Distributions/DistributionManager.js');
-const Helper = require('./Helper.js');
-
-
-const { DataFactory } = n3;
-const { namedNode, literal, defaultGraph, quad } = DataFactory;
-
 
 class HistoricFileSystemReader{
     constructor(fragmentParser, distributionStore){
@@ -21,20 +11,14 @@ class HistoricFileSystemReader{
 
     readAndParseSync(){
         return new Promise((resolve) => {
-            let phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
-            let lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
-            let timeFrequencyDistribution = new TimeFrequencyDistribution();
-            let frequencyDistribution = new FrequencyDistribution();
-            let timeGroupedFrequencyDistribution = new TimeGroupedFrequencyDistribution();
-
             let temp = this;
-            //console.log("\x1b[31m","reading","\x1b[0m");
+            console.log("\x1b[31m","reading","\x1b[0m");
             this.files = undefined;
             fs.readdir("./previous", async function(err, files){
                 if(err){
                     console.log(err);
                 }
-                //console.log("\x1b[31m","read dir","\x1b[0m");
+                console.log("\x1b[31m","read dir","\x1b[0m");
                 let i = 0;
                 for(let file of files.sort()){  //alle files overlopen, gesorteerd volgens naam, wat overeenkomt met de datum, oudste eerst
                     if(i++%100 === 0) HistoricFileSystemReader.showProgress(i, files.length, "files");
