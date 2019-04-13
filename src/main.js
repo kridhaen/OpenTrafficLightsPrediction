@@ -19,6 +19,6 @@ historicFileSystemReader.readAndParseSync()
     .then(() => {
 
         let realTimeReader = new RealTimeReader(distributionStore, predictionPublisher, realTimeFragmentParser);
-        realTimeReader.getLatestCyclic(6000);
+        realTimeReader.getLatestCyclic(1000);
 
     });

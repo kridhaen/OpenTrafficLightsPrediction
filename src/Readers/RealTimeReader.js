@@ -2,7 +2,7 @@ const n3 = require('n3');
 
 const PredictionCalculator = require('../Predictor/PredicionCalculator.js');
 const Downloader = require('./Downloader.js');
-const Helper = require('./Helper.js');
+const PredictionManager = require('../Predictor/PredictionManager.js');
 
 const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
@@ -38,11 +38,9 @@ class RealTimeReader{
     }
 
     beforePhaseChangeCheck(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase){
-        if(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-            let predictedDuration = PredictionCalculator.calculateMeanDuration(this.distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
-            let likelyTime = new Date(new Date(phaseStart[signalGroup]) + predictedDuration).toISOString();
+        PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, observation, phaseStart, this.distributionStore, (likelyTime) => {
             store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
-        }
+        });
     }
 
     async afterHandle(store){

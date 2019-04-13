@@ -8,6 +8,7 @@ class FragmentParser{
     constructor(){
         this.phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
         this.lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
+        this.lastMaxEndTime = {};   //als maxEndTime van de vorige meting kleiner is dan van de huidige, en de fase is niet aangepast, dan ontbreken waarschijnlijk enkele fragmenten
     }
 
 
@@ -22,6 +23,7 @@ class FragmentParser{
             if(!this.phaseStart[quad.subject.value]){
                 this.phaseStart[quad.subject.value] = -1;
                 this.lastPhase[quad.subject.value] = -1;
+                this.lastMaxEndTime[quad.subject.value] = -1;
             }
         });
 
@@ -63,9 +65,15 @@ class FragmentParser{
                             this.lastPhase[signalGroup] = signalPhase;
                             this.phaseStart[signalGroup] = generatedAtTime;
                         }
-                        else{
-                            if(onSamePhase){
-                                onSamePhase(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                        else{   //zelfde fase
+                            if(this.lastMaxEndTime[signalGroup] !== -1 && maxEndTime > this.lastMaxEndTime[signalGroup]){  //volgende maxtime in zelfde fase eindigt later, maar was max, dus ergens iets niet juist -> ongeldig, reset
+                                this.lastPhase[signalGroup] = -1;
+                                this.phaseStart[signalGroup] = -1;
+                            }
+                            else{
+                                if(onSamePhase){
+                                    onSamePhase(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                                }
                             }
                         }
                     }
@@ -78,6 +86,7 @@ class FragmentParser{
                             this.phaseStart[signalGroup] = generatedAtTime;
                         }
                     }
+                    this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
                 }
             });
 
