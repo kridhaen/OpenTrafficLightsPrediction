@@ -1,6 +1,5 @@
 const n3 = require('n3');
 
-const PredictionCalculator = require('../Predictor/PredicionCalculator.js');
 const Downloader = require('./Downloader.js');
 const PredictionManager = require('../Predictor/PredictionManager.js');
 
@@ -29,7 +28,7 @@ class RealTimeReader{
                 console.log("\x1b[36m","different latest","\x1b[0m");
 
                 await this.fragmentParser.handleFragment(latest, undefined, undefined, this.beforePhaseChangeCheck, this.afterHandle);
-
+                console.log("\x1b[36m","latest handling complete","\x1b[0m")
             }
         }
         else {
@@ -67,7 +66,7 @@ class RealTimeReader{
             if(timer <= 0){
                 timer = cycleTime;
                 Downloader.download(this.DATASET_URL)
-                    .then((res) => { console.log("\x1b[36m","downloaded latest fragment","\x1b[0m"); return res})
+                    .then((res) => { console.log("\x1b[35m","downloaded latest fragment","\x1b[0m"); return res})
                     .then((res) => this.handleLatest(res))
                     .catch(e => console.log(e));
                 console.log("\x1b[35m","ready for next latest","\x1b[0m");
