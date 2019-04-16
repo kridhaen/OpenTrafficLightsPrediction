@@ -7,7 +7,7 @@ const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
 class RealTimeReader{
-    constructor(distributionStore, predictionPublisher, fragmentParser){
+    constructor(fragmentParser, distributionStore, predictionPublisher){
         this.lastLatest = undefined;
         this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
         this.phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie

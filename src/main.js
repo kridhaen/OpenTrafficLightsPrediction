@@ -17,8 +17,11 @@ let predictionPublisher = new PredictionPublisher(8080);
 predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
     .then(() => {
+        predictionPublisher.setJSONDistributionEndpoint("distribution/fd", distributionStore.get("fd").getDistributions());
+        predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
+        predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
 
-        let realTimeReader = new RealTimeReader(distributionStore, predictionPublisher, realTimeFragmentParser);
+        let realTimeReader = new RealTimeReader(realTimeFragmentParser, distributionStore, predictionPublisher);
         realTimeReader.getLatestCyclic(1000);
 
     });
