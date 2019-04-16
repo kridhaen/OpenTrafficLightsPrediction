@@ -11,8 +11,6 @@ class FragmentParser{
         this.lastMaxEndTime = {};   //als maxEndTime van de vorige meting kleiner is dan van de huidige, en de fase is niet aangepast, dan ontbreken waarschijnlijk enkele fragmenten
     }
 
-
-
     async handleFragment(fragment, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle){
         let store = await Helper.parseAndStoreQuads(fragment);
 

@@ -13,7 +13,7 @@ it('writeN3Store', () => {
     return Downloader.download(url).then(async (response) => {
         let store = await Helper.parseAndStoreQuads(response);
         expect(store).toBeDefined();
-        return realTimeReader.writeN3Store(store).then((result) => {
+        return Helper.writeN3Store(store).then((result) => {
             expect(result).toBeDefined();
             expect(result).not.toBe('');
             //expect(result).toEqual(response);

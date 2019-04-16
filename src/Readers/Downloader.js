@@ -3,13 +3,20 @@ const https = require("https");
 const axios = require('axios');
 
 //TODO: delete unused version
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 class Downloader{
     static download(_url){
         return new Promise((resolve,reject) => {
 
             https.get(_url, (resp) => {
+                const { statusCode } = resp;
+
+                if(statusCode !== 200){
+                    throw new Error('Request Failed.\n' +
+                        `Status Code: ${statusCode}`);
+                }
+
                 let data = '';
 
                 // A chunk of data has been recieved.
@@ -22,7 +29,7 @@ class Downloader{
                     resolve(data);
                 });
             }).on("error", (err) => {
-                console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err);
+                console.log("\x1b[31m\x1b[47m",err,"\x1b[0m");
                 reject(err);
             });
 

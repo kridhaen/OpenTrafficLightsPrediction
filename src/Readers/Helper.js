@@ -13,6 +13,17 @@ class Helper{
             });
         })
     }
+
+    static writeN3Store(store){
+        return new Promise(async (resolve) => {
+            const writer = new n3.Writer(store);
+            for(let quad of store.getQuads()){
+                writer.addQuad(quad);
+            }
+
+            await writer.end((error, result) => {resolve(result)});
+        });
+    }
 }
 
 module.exports = Helper;
