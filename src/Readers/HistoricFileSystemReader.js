@@ -2,11 +2,9 @@ const fs = require('fs');
 const DistributionManager = require('../Distributions/DistributionManager.js');
 
 class HistoricFileSystemReader{
-    constructor(fragmentParser, distributionStore){
+    constructor(onFile){
         this.readAndParseSync = this.readAndParseSync.bind(this);
-        this.fragmentParser = fragmentParser;
-        this.distributionStore = distributionStore;
-        this.onPhaseChange = this.onPhaseChange.bind(this);
+        this.onFile = onFile;
     }
 
     readAndParseSync(){
@@ -26,7 +24,7 @@ class HistoricFileSystemReader{
                     //console.log("\x1b[31m","read file","\x1b[0m");
                     let fragment = data.toString();
 
-                    await temp.fragmentParser.handleFragment(fragment, temp.onPhaseChange, undefined, undefined, undefined);
+                    await temp.onFile(fragment);
                 }
                 console.log("\x1b[31m","read complete","\x1b[0m");
                 // HistoricFileSystemReader.printToFile(frequencyDistribution.createDistributionsCSV(),"./csv_data/csv_data_",".csv");
@@ -42,10 +40,6 @@ class HistoricFileSystemReader{
             });
         });
 
-    }
-
-    onPhaseChange(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase){
-        DistributionManager.storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, this.distributionStore);
     }
 
     static printToFile(data, filename, extension){  //let op concurrent fd open

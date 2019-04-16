@@ -9,7 +9,11 @@ let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
 let historicFragmentParser = new FragmentParser();
-let historicFileSystemReader = new HistoricFileSystemReader(historicFragmentParser, distributionStore);
+let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
+        await historicFragmentParser.handleFragment(fragment, (signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase) => {
+            DistributionManager.storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore);
+    }, undefined, undefined, undefined);
+});
 
 let realTimeFragmentParser = new FragmentParser();
 
