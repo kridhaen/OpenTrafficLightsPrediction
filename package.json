@@ -17,6 +17,9 @@
     "start": "node main.js",
     "test": "jest"
   },
+  "jest": {
+    "collectCoverage": true
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kridhaen/OpenTrafficLightsPredition.git"
