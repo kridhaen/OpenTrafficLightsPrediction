@@ -6,7 +6,7 @@ class PredictionPublisher{
         this.port = port ? port : 8080;
         this.app = express();
         this.app.use(cors());
-        this.app.get('/', (req, res) => res.send("OpenTrafficLightsPredicion server running!"));
+        this.app.get('/', (req, res) => res.send("OpenTrafficLightsPrediction server running!"));
     }
 
     setLatestEndpoint(data){

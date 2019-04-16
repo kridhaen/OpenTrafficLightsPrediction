@@ -2,7 +2,7 @@
   "name": "open-traffic-lights-predicition",
   "version": "0.0.1",
   "description": "Predicting phase durations of dynamically programmed traffic lights from OpenTrafficLights",
-  "main": "data_reader.js",
+  "main": "main.js",
   "dependencies": {
     "axios": "^0.18.0",
     "cors": "^2.8.5",
@@ -14,8 +14,11 @@
     "supertest": "^4.0.2"
   },
   "scripts": {
-    "start": "node data_reader.js",
+    "start": "node main.js",
     "test": "jest"
+  },
+  "jest": {
+    "collectCoverage": true
   },
   "repository": {
     "type": "git",
