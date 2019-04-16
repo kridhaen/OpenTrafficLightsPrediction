@@ -1,7 +1,4 @@
 const PredictionCalculator = require('./PredicionCalculator.js');
-const n3 = require('n3');
-const { DataFactory } = n3;
-const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
 class PredictionManager{
     static predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
