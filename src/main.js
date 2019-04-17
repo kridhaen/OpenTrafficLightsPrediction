@@ -15,7 +15,8 @@ DistributionManager.createDistributions(distributionStore);
 
 let historicFragmentParser = new FragmentParser();
 let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
-        await historicFragmentParser.handleFragment(fragment, (signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase) => {
+        await historicFragmentParser.handleFragment(fragment, (returnObject) => {
+            let { signalGroup, generatedAtTime, observationUTC, phaseStart, lastPhase } = returnObject;
             DistributionManager.storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore);
     }, undefined, undefined, undefined);
 });
@@ -32,13 +33,15 @@ historicFileSystemReader.readAndParseSync()
 
         let realTimeReader = new RealTimeReader(async (latest) => {
             await realTimeFragmentParser.handleFragment(latest, undefined, undefined,
-                (signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, phaseStart, lastPhase) => {
+                (returnObject) => {
+                    let { signalGroup, signalPhase, signalState, minEndTime, maxEndTime, observation, store, phaseStart } = returnObject;
                     PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, phaseStart, distributionStore, (likelyTime) => {
                         store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
                     })
                 },
-                async (store) => {
-                    await Helper.writeN3Store(store).then((result) => {predictionPublisher.setLatestEndpoint(result)});
+                async (returnObject) => {
+                    let { store, prefixes } = returnObject;
+                    await Helper.writeN3Store(store).then((result) => {predictionPublisher.setLatestEndpoint(prefixes+"\n"+result)});
                 }
             );
         });

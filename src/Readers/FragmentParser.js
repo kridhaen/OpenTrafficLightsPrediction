@@ -11,8 +11,41 @@ class FragmentParser{
         this.lastMaxEndTime = {};   //als maxEndTime van de vorige meting kleiner is dan van de huidige, en de fase is niet aangepast, dan ontbreken waarschijnlijk enkele fragmenten
     }
 
+    static initReturnObject(){
+        return {
+            "signalGroup": undefined,
+            "signalPhase": undefined,
+            "signalState": undefined,
+            "generatedAtTime": undefined,
+            "minEndTime": undefined,
+            "maxEndTime": undefined,
+            "observationUTC": undefined,
+            "observation": undefined,
+            "store": undefined,
+            "prefixes": undefined,
+            "phaseStart": undefined,
+            "lastPhase": undefined
+        };
+    }
+
+    static setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, phaseStart, lastPhase){
+        returnObject["signalGroup"] = signalGroup;
+        returnObject["signalPhase"] = signalPhase;
+        returnObject["signalState"] = signalState;
+        returnObject["generatedAtTime"] = generatedAtTime;
+        returnObject["minEndTime"] = minEndTime;
+        returnObject["maxEndTime"] = maxEndTime;
+        returnObject["observationUTC"] = observationUTC;
+        returnObject["observation"] = observation;
+        returnObject["store"] = store;
+        returnObject["prefixes"] = prefixes;
+        returnObject["phaseStart"] = phaseStart;
+        returnObject["lastPhase"] = lastPhase;
+    };
+
     async handleFragment(fragment, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle){
-        let store = await Helper.parseAndStoreQuads(fragment);
+        let returnObject = FragmentParser.initReturnObject();
+        let { store, prefixes } = await Helper.parseAndStoreQuads(fragment);
 
         let signalGroups = [];
 
@@ -52,11 +85,13 @@ class FragmentParser{
 
                     if(this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1){
                         if(beforePhaseChangeCheck){
-                            beforePhaseChangeCheck(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                            FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                            beforePhaseChangeCheck(returnObject);
                         }
                         if(this.lastPhase[signalGroup] !== signalPhase){ //faseovergang
                             if(onPhaseChange){
-                                onPhaseChange(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                                FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                                onPhaseChange(returnObject);
                             }
 
                             //klaarzetten voor volgende fase
@@ -70,7 +105,8 @@ class FragmentParser{
                             }
                             else{
                                 if(onSamePhase){
-                                    onSamePhase(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, this.phaseStart, this.lastPhase);
+                                    FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                                    onSamePhase(returnObject);
                                 }
                             }
                         }
@@ -90,7 +126,8 @@ class FragmentParser{
 
         });
         if(afterHandle){
-            afterHandle(store);
+            FragmentParser.setReturnObject(returnObject, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, store, prefixes, undefined, undefined);
+            afterHandle(returnObject);
         }
     }
 

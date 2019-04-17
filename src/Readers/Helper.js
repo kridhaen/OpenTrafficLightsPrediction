@@ -9,7 +9,7 @@ class Helper{
                 if (quad)
                     store.addQuad(quad);
                 else
-                    return resolve(store);
+                    return resolve({"store": store, "prefixes": prefixes});
             });
         })
     }
