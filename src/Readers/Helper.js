@@ -14,9 +14,9 @@ class Helper{
         })
     }
 
-    static writeN3Store(store){
+    static writeN3Store(store, prefixes){
         return new Promise(async (resolve) => {
-            const writer = new n3.Writer(store);
+            const writer = new n3.Writer({ "prefixes": {prefixes}});
             for(let quad of store.getQuads()){
                 writer.addQuad(quad);
             }

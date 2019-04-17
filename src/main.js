@@ -41,7 +41,7 @@ historicFileSystemReader.readAndParseSync()
                 },
                 async (returnObject) => {
                     let { store, prefixes } = returnObject;
-                    await Helper.writeN3Store(store).then((result) => {predictionPublisher.setLatestEndpoint(prefixes+"\n"+result)});
+                    await Helper.writeN3Store(store, prefixes).then((result) => {predictionPublisher.setLatestEndpoint(result)});
                 }
             );
         });

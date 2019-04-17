@@ -4,7 +4,7 @@ const PredictionPublisher = require('../../Publisher/PredictionPublisher');
 const Helper = require('../Helper.js');
 const Downloader = require('../Downloader.js');
 
-it('writeN3Store', () => {
+it('rawdata test parsing', () => {
     let url = "https://lodi.ilabt.imec.be/observer/rawdata/latest";
     let distributionStore = new DistributionStore();
     let predictionPublisher = new PredictionPublisher();
