@@ -10,6 +10,8 @@ const Helper = require('./Readers/Helper.js');
 const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
+const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
+
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
@@ -31,7 +33,7 @@ historicFileSystemReader.readAndParseSync()
         predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
         predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
 
-        let realTimeReader = new RealTimeReader(async (latest) => {
+        let realTimeReader = new RealTimeReader(datasetUrl, async (latest) => {
             await realTimeFragmentParser.handleFragment(latest, undefined, undefined,
                 (returnObject) => {
                     let { signalGroup, signalPhase, signalState, minEndTime, maxEndTime, observation, store, phaseStart } = returnObject;

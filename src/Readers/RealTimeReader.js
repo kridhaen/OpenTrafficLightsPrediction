@@ -8,9 +8,9 @@ const { DataFactory } = n3;
 const { namedNode, literal, defaultGraph, quad } = DataFactory;
 
 class RealTimeReader{
-    constructor(onLatest){
+    constructor(datasetUrl, onLatest){
         this.lastLatest = undefined;
-        this.DATASET_URL = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
+        this.DATASET_URL = datasetUrl;
         // this.phaseStart = {}; //om de start van een fase te detecteren, voor iedere observatie
         // this.lastPhase = {}; //om de laatst tegengekomen fase op te slaan, voor iedere observatie
         // this.distributionStore = distributionStore;
@@ -24,7 +24,7 @@ class RealTimeReader{
     //latest -> green, prev: blue
     async handleLatest(latest){
         console.log("comparing");
-        console.log(latest);
+        //console.log(latest);
         if(this.lastLatest){
             if(latest.length != this.lastLatest.length){    //different latest
                 this.lastLatest = latest;
