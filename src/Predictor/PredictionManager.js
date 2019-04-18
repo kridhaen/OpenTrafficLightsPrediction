@@ -1,10 +1,20 @@
 const PredictionCalculator = require('./PredicionCalculator.js');
 
 class PredictionManager{
-    static predictLikelyTime(signalGroup, signalPhase, signalState, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
+    static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
         if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-            let predictedDuration = PredictionCalculator.calculateMeanDuration(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]);
+            let distribution = distributionStore.get('fd').getDistributions()[signalGroup][signalPhase];
             let result = new Date(phaseStart[signalGroup]);
+
+            let elapsedDuration = (generatedAtTime.getTime() - result.getTime()) / 1000;
+            let futureDistribution = {};
+            Object.keys(distribution).forEach((key) => {
+                if(key > elapsedDuration){
+                    futureDistribution[key] = distribution[key];
+                }
+            });
+
+            let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
             result.setTime(result.getTime() + predictedDuration * 1000);
             let likelyTime = result.toISOString();
             if(minEndTime === maxEndTime){
