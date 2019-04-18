@@ -9,7 +9,7 @@ class PredictionManager{
             let elapsedDuration = (generatedAtTime.getTime() - result.getTime()) / 1000;
             let futureDistribution = {};
             Object.keys(distribution).forEach((key) => {
-                if(key > elapsedDuration){
+                if(key > elapsedDuration){  //TODO: should > or >= ?
                     futureDistribution[key] = distribution[key];
                 }
             });
