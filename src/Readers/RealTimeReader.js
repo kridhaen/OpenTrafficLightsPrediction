@@ -6,7 +6,7 @@ class RealTimeReader{
         this.DATASET_URL = datasetUrl;
         this.onLatest = onLatest;
     }
-    
+
     async handleLatest(latest){
         console.log("comparing");
         //console.log(latest);
