@@ -13,7 +13,7 @@ class Downloader{
                 const { statusCode } = resp;
 
                 if(statusCode !== 200){
-                    throw new Error('Request Failed.\n' +
+                    reject('Request Failed.\n' +
                         `Status Code: ${statusCode}`);
                 }
 
