@@ -7,6 +7,7 @@ class PredictionPublisher{
         this.app = express();
         this.app.use(cors());
         this.app.get('/', (req, res) => res.send("OpenTrafficLightsPrediction server running!"));
+        this.server = undefined;
     }
 
     setLatestEndpoint(data){
@@ -38,7 +39,32 @@ class PredictionPublisher{
     }
 
     start(){
-        this.app.listen(this.port, () => console.log(`Publisher listening on port ${this.port}`));
+        return new Promise((resolve) => {
+            if(this.server){
+                this.stop().then(() => {this.start().then(() => resolve())});
+            }
+            else{
+                this.server = this.app.listen(this.port, () => {
+                    console.log(`Publisher started listening on port ${this.port}`);
+                    resolve();
+                });
+            }
+        });
+    }
+
+    stop(){
+        return new Promise((resolve, reject) => {
+            if(this.server){
+                this.server.close(() => {
+                    this.server = undefined;
+                    console.log(`Publisher stopped listening on port ${this.port}`);
+                    resolve()
+                });
+            }
+            else{
+                reject("No server listening");
+            }
+        });
     }
 }
 
