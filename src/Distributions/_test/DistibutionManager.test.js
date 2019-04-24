@@ -19,10 +19,8 @@ test('storeInDistribution', () => {
     let lastPhase = {};
     let signalGroup = "3";
     lastPhase[signalGroup] = "6";
-    let phaseStart = {};
-    phaseStart[signalGroup] = "2019-04-13T16:57:36.000Z";
     DistributionManager.createDistributions(distributionStore);
-    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z",phaseStart,signalGroup,lastPhase,observationUTC,distributionStore);
+    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z","2019-04-13T16:57:36.000Z",signalGroup,lastPhase,observationUTC,distributionStore);
     for(let name of distributionStore.getNames()){
         expect(distributionStore.get(name).getDistributions()[signalGroup]).toBeDefined();
     }
@@ -32,7 +30,7 @@ test('storeInDistribution', () => {
     observationUTC2["minute"] = 19;
     observationUTC2["day"] = 6;    //0 == sunday
     observationUTC2["year"] = 2019;
-    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z",phaseStart,signalGroup,lastPhase,observationUTC2,distributionStore);
+    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z","2019-04-13T16:57:36.000Z",signalGroup,lastPhase,observationUTC2,distributionStore);
     for(let name of distributionStore.getNames()){
         expect(distributionStore.get(name).getDistributions()[signalGroup]).toBeDefined();
     }
@@ -42,7 +40,7 @@ test('storeInDistribution', () => {
     observationUTC3["minute"] = 19;
     observationUTC3["day"] = 5;    //0 == sunday
     observationUTC3["year"] = 2019;
-    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z",phaseStart,signalGroup,lastPhase,observationUTC3,distributionStore);
+    DistributionManager.storeInDistribution("2019-04-13T16:57:46.000Z","2019-04-13T16:57:36.000Z",signalGroup,lastPhase,observationUTC3,distributionStore);
     for(let name of distributionStore.getNames()){
         expect(distributionStore.get(name).getDistributions()[signalGroup]).toBeDefined();
     }

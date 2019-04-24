@@ -4,7 +4,7 @@ class PredictionManager{
     static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
         if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
             let distribution = distributionStore.get('fd').getDistributions()[signalGroup][signalPhase];
-            let result = new Date(phaseStart[signalGroup]);
+            let result = new Date(phaseStart);
 
             let elapsedDuration = (generatedAtTime.getTime() - result.getTime()) / 1000;
             let futureDistribution = {};

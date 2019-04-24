@@ -8,9 +8,8 @@ test('predictLikelyTime: min < likely < max',() => {
     let signalGroup = "a";
     let signalPhase = "b";
     let duration = 10;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.000Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime = new Date(testTime);
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
@@ -31,9 +30,8 @@ test('predictLikelyTime: prediction < minEndTime',() => {
     let signalGroup = "a";
     let signalPhase = "b";
     let duration = 5;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.245Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime = new Date(testTime);
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
@@ -53,9 +51,8 @@ test('predictLikelyTime: prediction > maxEndTime',() => {
     let signalGroup = "a";
     let signalPhase = "b";
     let duration = 20;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.245Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime = new Date(testTime);
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
@@ -75,9 +72,8 @@ test('predictLikelyTime: minEndTime = maxEndTime',() => {
     let signalGroup = "a";
     let signalPhase = "b";
     let duration = 20;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.245Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime = new Date(testTime);
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
@@ -98,9 +94,8 @@ test('predictLikelyTime: min < likely < max and generatedAtTime in distribution'
     let signalPhase = "b";
     let duration1 = 10;
     let duration2 = 20;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.000Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime1 = new Date(new Date(testTime).getTime() + 5000);
     let generatedAtTime2 = new Date(new Date(testTime).getTime() + 15000);
     frequencyDistribution.add(signalGroup, signalPhase, duration1);
@@ -130,9 +125,8 @@ test('predictLikelyTime: distributionStore does not contain or is empty',() => {
     let signalGroup = "a";
     let signalPhase = "b";
     let duration = 20;
-    let phaseStart = {};
     let testTime = "2019-04-13T16:57:31.245Z";
-    phaseStart[signalGroup] = testTime;
+    let phaseStart = testTime;
     let generatedAtTime = new Date(testTime);
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");

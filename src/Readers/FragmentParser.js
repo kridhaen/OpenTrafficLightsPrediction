@@ -85,12 +85,12 @@ class FragmentParser{
 
                     if(this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1){
                         if(beforePhaseChangeCheck){
-                            FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                            FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                             beforePhaseChangeCheck(returnObject);
                         }
                         if(this.lastPhase[signalGroup] !== signalPhase){ //faseovergang
                             if(onPhaseChange){
-                                FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                                FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                 onPhaseChange(returnObject);
                             }
 
@@ -105,7 +105,7 @@ class FragmentParser{
                             }
                             else{
                                 if(onSamePhase){
-                                    FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart, this.lastPhase);
+                                    FragmentParser.setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                     onSamePhase(returnObject);
                                 }
                             }

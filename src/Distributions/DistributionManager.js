@@ -14,13 +14,13 @@ class DistributionManager{
     }
 
 
-    static storeInDistribution(phaseEndDate, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore){
+    static storeInDistribution(phaseEndDateTime, phaseStartDateTime, signalGroup, lastPhase, observationUTC, distributionStore){
         let frequencyDistribution = distributionStore.get('fd');
         let timeFrequencyDistribution = distributionStore.get('tfd');
         let timeGroupedFrequencyDistribution = distributionStore.get('tgfd');
 
         //TODO: klopt dit wel??
-        let phaseDuration = new Date(phaseEndDate) - new Date(phaseStart[signalGroup]);
+        let phaseDuration = new Date(phaseEndDateTime) - new Date(phaseStartDateTime);
 
         //opslaan in tabel frequentieverdeling
         frequencyDistribution.add(signalGroup, lastPhase[signalGroup], Math.round(phaseDuration/1000));
