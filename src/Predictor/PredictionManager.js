@@ -1,5 +1,6 @@
 const PredictionCalculator = require('./PredicionCalculator.js');
 
+//TODO: signalState not used
 class PredictionManager{
     static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
         if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
