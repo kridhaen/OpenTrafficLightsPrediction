@@ -1,5 +1,4 @@
 const fs = require('fs');
-const DistributionManager = require('../Distributions/DistributionManager.js');
 
 class HistoricFileSystemReader{
     constructor(onFile){
