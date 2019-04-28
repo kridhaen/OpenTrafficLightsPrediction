@@ -6,8 +6,9 @@ class PredictionManager{
         if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
             let distribution = distributionStore.get('fd').getDistributions()[signalGroup][signalPhase];
             let result = new Date(phaseStart);
+            let observationTime = new Date(generatedAtTime);
 
-            let elapsedDuration = (generatedAtTime.getTime() - result.getTime()) / 1000;
+            let elapsedDuration = (observationTime.getTime() - result.getTime()) / 1000;
             let futureDistribution = {};
             Object.keys(distribution).forEach((key) => {
                 if(key > elapsedDuration){  //TODO: should > or >= ?

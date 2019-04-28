@@ -10,7 +10,7 @@ test('predictLikelyTime: min < likely < max',() => {
     let duration = 10;
     let testTime = "2019-04-13T16:57:31.000Z";
     let phaseStart = testTime;
-    let generatedAtTime = new Date(testTime);
+    let generatedAtTime = testTime;
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
     let minEndTime = new Date(new Date(testTime).getTime() +5000).toISOString();
@@ -32,7 +32,7 @@ test('predictLikelyTime: prediction < minEndTime',() => {
     let duration = 5;
     let testTime = "2019-04-13T16:57:31.245Z";
     let phaseStart = testTime;
-    let generatedAtTime = new Date(testTime);
+    let generatedAtTime = testTime;
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
     let minEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
@@ -53,7 +53,7 @@ test('predictLikelyTime: prediction > maxEndTime',() => {
     let duration = 20;
     let testTime = "2019-04-13T16:57:31.245Z";
     let phaseStart = testTime;
-    let generatedAtTime = new Date(testTime);
+    let generatedAtTime = testTime;
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
     let minEndTime = new Date(new Date(testTime).getTime() +5000).toISOString();
@@ -74,7 +74,7 @@ test('predictLikelyTime: minEndTime = maxEndTime',() => {
     let duration = 20;
     let testTime = "2019-04-13T16:57:31.245Z";
     let phaseStart = testTime;
-    let generatedAtTime = new Date(testTime);
+    let generatedAtTime = testTime;
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
     let minEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
@@ -96,8 +96,8 @@ test('predictLikelyTime: min < likely < max and generatedAtTime in distribution'
     let duration2 = 20;
     let testTime = "2019-04-13T16:57:31.000Z";
     let phaseStart = testTime;
-    let generatedAtTime1 = new Date(new Date(testTime).getTime() + 5000);
-    let generatedAtTime2 = new Date(new Date(testTime).getTime() + 15000);
+    let generatedAtTime1 = new Date(new Date(testTime).getTime() + 5000).toISOString();
+    let generatedAtTime2 = new Date(new Date(testTime).getTime() + 15000).toISOString();
     frequencyDistribution.add(signalGroup, signalPhase, duration1);
     frequencyDistribution.add(signalGroup, signalPhase, duration2);
     distributionStore.add(frequencyDistribution, "fd");
@@ -127,7 +127,7 @@ test('predictLikelyTime: distributionStore does not contain or is empty',() => {
     let duration = 20;
     let testTime = "2019-04-13T16:57:31.245Z";
     let phaseStart = testTime;
-    let generatedAtTime = new Date(testTime);
+    let generatedAtTime = testTime;
     frequencyDistribution.add(signalGroup, signalPhase, duration);
     distributionStore.add(frequencyDistribution, "fd");
     let minEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
