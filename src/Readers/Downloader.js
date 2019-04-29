@@ -1,15 +1,22 @@
 const https = require("https");
 //const fetch = require('node-fetch');
-const axios = require('axios');
+//const axios = require('axios');
 
 //TODO: delete unused version
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 class Downloader{
     static download(_url){
         return new Promise((resolve,reject) => {
 
             https.get(_url, (resp) => {
+                const { statusCode } = resp;
+
+                if(statusCode !== 200){
+                    reject('Request Failed.\n' +
+                        `Status Code: ${statusCode}`);
+                }
+
                 let data = '';
 
                 // A chunk of data has been recieved.
@@ -22,7 +29,7 @@ class Downloader{
                     resolve(data);
                 });
             }).on("error", (err) => {
-                console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err);
+                //console.log("\x1b[31m\x1b[47m",err,"\x1b[0m");
                 reject(err);
             });
 
@@ -42,18 +49,18 @@ class Downloader{
     //     });
     // }
 
-    static download1(_url){
-        console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
-        const httpAgent = new https.Agent({ rejectUnauthorized: false });
-        return new Promise((resolve,reject) => {
-
-            axios.get(_url, {httpAgent})
-                .then(function(response) {
-                    resolve(response.data);
-                })
-                .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
-        });
-    }
+    // static download1(_url){
+    //     console.log("\x1b[32m","downloading: "+_url,"\x1b[0m");
+    //     const httpAgent = new https.Agent({ rejectUnauthorized: false });
+    //     return new Promise((resolve,reject) => {
+    //
+    //         axios.get(_url, {httpAgent})
+    //             .then(function(response) {
+    //                 resolve(response.data);
+    //             })
+    //             .catch(err => {console.log("\x1b[31m\x1b[47m",err,"\x1b[0m"); reject(err)});
+    //     });
+    // }
 }
 
 module.exports = Downloader;

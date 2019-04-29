@@ -14,21 +14,22 @@ class DistributionManager{
     }
 
 
-    static storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore){
+    static storeInDistribution(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, observationUTC, distributionStore){
         let frequencyDistribution = distributionStore.get('fd');
         let timeFrequencyDistribution = distributionStore.get('tfd');
         let timeGroupedFrequencyDistribution = distributionStore.get('tgfd');
 
-        let phaseDuration = new Date(generatedAtTime) - new Date(phaseStart[signalGroup]);
+        //TODO: klopt dit wel??
+        let phaseDuration = new Date(phaseEndDateTime) - new Date(phaseStartDateTime);
 
         //opslaan in tabel frequentieverdeling
-        frequencyDistribution.add(signalGroup, lastPhase[signalGroup], Math.round(phaseDuration/1000));
+        frequencyDistribution.add(signalGroup, signalPhase, Math.round(phaseDuration/1000));
 
         //opslaan in frequentieverdeling op tijdstippen gesplitst
-        timeFrequencyDistribution.add(signalGroup, lastPhase[signalGroup], observationUTC["year"], observationUTC["month"], observationUTC["day"], observationUTC["hour"], Math.floor(observationUTC["minute"]/20)*20, Math.round(phaseDuration/1000));
+        timeFrequencyDistribution.add(signalGroup, signalPhase, observationUTC["year"], observationUTC["month"], observationUTC["day"], observationUTC["hour"], Math.floor(observationUTC["minute"]/20)*20, Math.round(phaseDuration/1000));
 
         //opslaan in frequentietabel gesplitst op week of weekend en op uur
-        timeGroupedFrequencyDistribution.add(signalGroup, lastPhase[signalGroup], observationUTC["day"]===0||6 ? 1 : 0, observationUTC["hour"], Math.round(phaseDuration/1000));
+        timeGroupedFrequencyDistribution.add(signalGroup, signalPhase, observationUTC["day"]===(0||6) ? 1 : 0, observationUTC["hour"], Math.round(phaseDuration/1000));
     }
 }
 
