@@ -37,6 +37,19 @@ class TimeFrequencyDistribution {
         return this.frequencyDistribution;
     }
 
+    get(signalGroup, signalPhase, year, month, day, hour, minutes){
+        if(this.frequencyDistribution[signalGroup]
+            && this.frequencyDistribution[signalGroup][signalPhase]
+            && this.frequencyDistribution[signalGroup][signalPhase][year]
+            && this.frequencyDistribution[signalGroup][signalPhase][year][month]
+            && this.frequencyDistribution[signalGroup][signalPhase][year][month][day]
+            && this.frequencyDistribution[signalGroup][signalPhase][year][month][day][hour]
+            && this.frequencyDistribution[signalGroup][signalPhase][year][month][day][hour][minutes]
+        ){
+            return this.frequencyDistribution[signalGroup][signalPhase][year][month][day][hour][minutes];
+        }
+    }
+
     createDistributionsCSV(){
         let output = [];
         Object.keys(this.frequencyDistribution).forEach((signalGroup) => {

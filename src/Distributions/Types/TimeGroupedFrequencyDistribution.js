@@ -28,6 +28,16 @@ class TimeGroupedFrequencyDistribution {
         return this.frequencyDistribution;
     }
 
+    get(signalGroup, signalPhase, isWeekend, hour){
+        if(this.frequencyDistribution[signalGroup]
+            && this.frequencyDistribution[signalGroup][signalPhase]
+            && this.frequencyDistribution[signalGroup][signalPhase][isWeekend]
+            && this.frequencyDistribution[signalGroup][signalPhase][isWeekend][hour]
+        ){
+            return this.frequencyDistribution[signalGroup][signalPhase][isWeekend][hour];
+        }
+    }
+
     createDistributionsCSV(){
         let output = [];
         Object.keys(this.frequencyDistribution).forEach((signalGroup) => {
