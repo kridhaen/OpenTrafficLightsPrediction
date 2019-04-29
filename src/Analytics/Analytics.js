@@ -22,6 +22,8 @@ class Analytics{
             "observationUTC": observationUTC,
             "lastPhaseLikelyTime": undefined,
             "predictedDuration": undefined,
+            "predictedDurationTFD": undefined,
+            "predictedDurationTGFD": undefined,
             "loss": undefined});
         if(phaseDuration < 0 || phaseDuration > 3600){
             console.log("\x1b[31m",phaseDuration,"\x1b[0m");
@@ -30,26 +32,38 @@ class Analytics{
 
     calculate(){
         for(let i = 0; i < this.list.length; i++){
-            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime} = this.list[i];
+            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC} = this.list[i];
             let temp = this.list;
-            let distribution = this.distributionStore.get("fd").getDistributions()[signalGroup][signalPhase];
+            let distribution = this.distributionStore.get("fd").get(signalGroup,signalPhase);
             PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution, (likelyTime) => {
                 temp[i]["lastPhaseLikelyTime"] = likelyTime;
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDuration"] = phaseDuration;
             });
+            let distribution2 = this.distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution2, (likelyTime) => {
+                let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
+                phaseDuration = Math.round(phaseDuration/1000);
+                temp[i]["predictedDurationTFD"] = phaseDuration;
+            });
+            let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,signalPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution3, (likelyTime) => {
+                let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
+                phaseDuration = Math.round(phaseDuration/1000);
+                temp[i]["predictedDurationTGFD"] = phaseDuration;
+            });
         }
         return this.list;
     }
 
-    calculateLoss(){
+    _calculateLoss(durationName){
         let mse = 0;
         let me = 0;
         let me_without_0 = 0;
         let me_without_0_counter = 0;
         for(let i = 0; i < this.list.length; i++){
-            let a = this.list[i]["predictedDuration"] - this.list[i]["phaseDuration"];
+            let a = this.list[i][durationName] - this.list[i]["phaseDuration"];
             mse += a*a;
             me += ((a < 0) ? a*-1 : a) ;
             if(this.list[i]["signalPhase"] !== "https://w3id.org/opentrafficlights/thesauri/signalphase/3"){
@@ -60,11 +74,17 @@ class Analytics{
         mse = mse / this.list.length;
         me = me / this.list.length;
         me_without_0 = me_without_0 / me_without_0_counter;
-        console.log("I  | II\n" + "II | I_");
+        console.log("I  | II\n" + "II | I_\n" + "for: "+durationName);
         console.log("MSE = "+ mse);
         console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden
         console.log("ME without 0 phase (orange) = "+ me_without_0);
     }
+
+    showLoss(){
+        this._calculateLoss("predictedDuration");
+        this._calculateLoss("predictedDurationTFD");
+        this._calculateLoss("predictedDurationTGFD");
+    };
 
 
 }

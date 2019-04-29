@@ -66,6 +66,6 @@ historicFileSystemReader.readAndParseSync()
 
         predictionPublisher.setJSONDistributionEndpoint("analytics", analytics.calculate());
 
-        analytics.calculateLoss();
+        analytics.showLoss();
 
     });
