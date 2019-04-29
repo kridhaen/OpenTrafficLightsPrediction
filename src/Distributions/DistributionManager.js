@@ -19,8 +19,7 @@ class DistributionManager{
         let timeFrequencyDistribution = distributionStore.get('tfd');
         let timeGroupedFrequencyDistribution = distributionStore.get('tgfd');
 
-        //TODO: klopt dit wel??
-        let phaseDuration = new Date(phaseEndDateTime) - new Date(phaseStartDateTime);
+        let phaseDuration = new Date(phaseEndDateTime).getTime() - new Date(phaseStartDateTime).getTime();
 
         //opslaan in tabel frequentieverdeling
         frequencyDistribution.add(signalGroup, signalPhase, Math.round(phaseDuration/1000));

@@ -34,20 +34,20 @@ class Analytics{
         for(let i = 0; i < this.list.length; i++){
             let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC} = this.list[i];
             let temp = this.list;
-            let distribution = this.distributionStore.get("fd").get(signalGroup,signalPhase);
+            let distribution = this.distributionStore.get("fd").get(signalGroup,lastPhase);
             PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution, (likelyTime) => {
                 temp[i]["lastPhaseLikelyTime"] = likelyTime;
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDuration"] = phaseDuration;
             });
-            let distribution2 = this.distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
+            let distribution2 = this.distributionStore.get("tfd").get(signalGroup,lastPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
             PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution2, (likelyTime) => {
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDurationTFD"] = phaseDuration;
             });
-            let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,signalPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
+            let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,lastPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
             PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution3, (likelyTime) => {
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
@@ -57,7 +57,7 @@ class Analytics{
         return this.list;
     }
 
-    _calculateLoss(durationName){
+    _calculateLoss(durationName){ //TODO: if likelyTime is undef? wordt gedeeld door totaal aantal, maar zijn die ook allemaal ingevuld? Hierboven is phaseDuration dan niet te groot? of is het niet ingevuld?
         let mse = 0;
         let me = 0;
         let me_without_0 = 0;
