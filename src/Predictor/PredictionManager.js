@@ -3,9 +3,8 @@ const PredictionCalculator = require('./PredicionCalculator.js');
 //TODO: signalState not used
 //TODO: als min === max, kan al terug geven voordat moet worden gerekend
 class PredictionManager{
-    static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
-        if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
-            let distribution = distributionStore.get('fd').getDistributions()[signalGroup][signalPhase];
+    static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, callback){
+        if(distribution && Object.keys(distribution).length > 0) {
             let result = new Date(phaseStart);
             let observationTime = new Date(generatedAtTime);
 

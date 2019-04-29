@@ -49,7 +49,8 @@ historicFileSystemReader.readAndParseSync()
             await realTimeFragmentParser.handleFragment(latest, undefined, undefined,
                 (returnObject) => {
                     let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase } = returnObject;
-                    PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, lastPhaseStart, distributionStore, (likelyTime) => {
+                    let distribution = distributionStore.get("fd").getDistributions()[signalGroup][signalPhase];
+                    PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, lastPhaseStart, distribution, (likelyTime) => {
                         store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
                     })
                 },

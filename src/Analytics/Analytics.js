@@ -32,7 +32,8 @@ class Analytics{
         for(let i = 0; i < this.list.length; i++){
             let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime} = this.list[i];
             let temp = this.list;
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, this.distributionStore, (likelyTime) => {
+            let distribution = this.distributionStore.get("fd").getDistributions()[signalGroup][signalPhase];
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution, (likelyTime) => {
                 temp[i]["lastPhaseLikelyTime"] = likelyTime;
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
