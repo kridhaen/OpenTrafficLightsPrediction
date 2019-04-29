@@ -1,6 +1,7 @@
 const PredictionCalculator = require('./PredicionCalculator.js');
 
 //TODO: signalState not used
+//TODO: als min === max, kan al terug geven voordat moet worden gerekend
 class PredictionManager{
     static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, callback){
         if(distributionStore.get('fd').getDistributions()[signalGroup][signalPhase]) {
@@ -19,7 +20,7 @@ class PredictionManager{
             let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
             result.setTime(result.getTime() + predictedDuration * 1000);
             let likelyTime = result.toISOString();
-            if(minEndTime === maxEndTime){
+            if(minEndTime && maxEndTime && minEndTime === maxEndTime){ //als undefined, ook gelijk
                 likelyTime = minEndTime;
             }
             else if(likelyTime < minEndTime){

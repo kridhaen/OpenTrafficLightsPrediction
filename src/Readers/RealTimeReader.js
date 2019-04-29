@@ -20,6 +20,9 @@ class RealTimeReader{
         }
         else {
             this.lastLatest = latest;
+            console.log("\x1b[36m","first latest","\x1b[0m");
+            await this.onLatest(latest);
+            console.log("\x1b[36m","first latest handling complete","\x1b[0m")
         }
     }
 
