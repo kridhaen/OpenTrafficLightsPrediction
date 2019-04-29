@@ -140,7 +140,8 @@ class FragmentParser{
                                     this.lastPhase[signalGroup] = signalPhase;
                                     this.phaseStart[signalGroup] = generatedAtTime;
                                 }
-                            } else {
+                            }
+                            else {
                                 //same phase
                                 if ((this.lastMaxEndTime[signalGroup] !== -1 && maxEndTime > this.lastMaxEndTime[signalGroup])
                                     || (this.lastMinEndTime[signalGroup] !== -1 && minEndTime < this.lastMinEndTime[signalGroup])) {
@@ -154,7 +155,8 @@ class FragmentParser{
                                     }
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             if (this.phaseStart[signalGroup] === -1 && this.lastPhase[signalGroup] === -1) {
                                 this.lastPhase[signalGroup] = signalPhase;
                             } else if (this.lastPhase[signalGroup] !== signalPhase) {

@@ -59,7 +59,8 @@ historicFileSystemReader.readAndParseSync()
                 }
             );
         });
-        //realTimeReader.getLatestCyclic(1000); //TODO: uncomment
+
+        //realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
         console.log("same: "+ same+"\nchanges: "+changes+"\nfragments: "+observations+"\n");
 
         predictionPublisher.setJSONDistributionEndpoint("analytics", analytics.calculate());

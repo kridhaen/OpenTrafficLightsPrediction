@@ -11,7 +11,7 @@ class PredictionManager{
 
             let elapsedDuration = (observationTime.getTime() - result.getTime()) / 1000;
             let futureDistribution = {};
-            Object.keys(distribution).forEach((key) => {
+            Object.keys(distribution).forEach((key) => {    //calculate mean only over future durations, not past
                 if(key > elapsedDuration){  //TODO: should > or >= ?
                     futureDistribution[key] = distribution[key];
                 }

@@ -26,9 +26,6 @@ class Analytics{
         if(phaseDuration < 0 || phaseDuration > 3600){
             console.log("\x1b[31m",phaseDuration,"\x1b[0m");
         }
-        else{
-            //console.log(phaseDuration);
-        }
     }
 
     calculate(){
@@ -46,14 +43,26 @@ class Analytics{
     }
 
     calculateLoss(){
-        let loss = 0;
+        let mse = 0;
+        let me = 0;
+        let me_without_0 = 0;
+        let me_without_0_counter = 0;
         for(let i = 0; i < this.list.length; i++){
             let a = this.list[i]["predictedDuration"] - this.list[i]["phaseDuration"];
-            loss += a*a;
+            mse += a*a;
+            me += ((a < 0) ? a*-1 : a) ;
+            if(this.list[i]["signalPhase"] !== "https://w3id.org/opentrafficlights/thesauri/signalphase/3"){
+                me_without_0 += ((a < 0) ? a*-1 : a) ;
+                me_without_0_counter ++;
+            }
         }
-        loss = loss / this.list.length;
+        mse = mse / this.list.length;
+        me = me / this.list.length;
+        me_without_0 = me_without_0 / me_without_0_counter;
         console.log("I  | II\n" + "II | I_");
-        console.log("= "+ loss);
+        console.log("MSE = "+ mse);
+        console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden
+        console.log("ME without 0 phase (orange) = "+ me_without_0);
     }
 
 
