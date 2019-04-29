@@ -24,6 +24,18 @@ test('FrequencyDistribution: add + getDistributions', () => {
     expect(Object.keys(frequencyDistribution.getDistributions()).length).toBe(2);
 });
 
+test('FrequencyDistribution: add + get', () => {
+    let frequencyDistribution = new FrequencyDistribution();
+    frequencyDistribution.add("group1","phase1","10");
+    frequencyDistribution.add("group1","phase1","20");
+    frequencyDistribution.add("group1","phase2","5");
+    frequencyDistribution.add("group1","phase2","15");
+    frequencyDistribution.add("group2","phase1","10");
+    frequencyDistribution.add("group2","phase1","30");
+
+    expect(Object.keys(frequencyDistribution.get("group1", "phase1")).length).toBe(2);
+});
+
 test('FrequencyDistribution: add + getDistributions number', () => {
     let frequencyDistribution = new FrequencyDistribution();
     frequencyDistribution.add("group1","phase1",10);
