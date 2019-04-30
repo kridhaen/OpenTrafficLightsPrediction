@@ -34,11 +34,11 @@ let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => 
     await historicFragmentParser.handleFragment(fragment, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
-        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, undefined, undefined); //TODO: uitwerken
+        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, undefined, undefined, generatedAtTime); //TODO: uitwerken
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
-        analytics.add(undefined, lastPhaseStart, signalGroup, signalPhase, signalPhase, minEndTime, maxEndTime);
+        analytics.add(undefined, lastPhaseStart, signalGroup, signalPhase, signalPhase, minEndTime, maxEndTime, generatedAtTime);
         same++
     }, () => {observations++}, undefined);
     let d = process.hrtime(c);
@@ -85,7 +85,7 @@ historicFileSystemReader.readAndParseSync()
 
         let analyticsList = analytics.calculate();
         predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
-        HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
+        //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
 
         analytics.showLoss();
 
