@@ -25,6 +25,7 @@ let same = 0;
 let a = process.hrtime();
 let timeDuration = 0;
 let timeCount = 0;
+let showCount = 0;
 
 let historicFragmentParser = new FragmentParser();
 let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
@@ -39,8 +40,11 @@ let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => 
     let d = process.hrtime(c);
     timeDuration+= (d[1] / 1000000000);
     timeCount++;
-    if(timeCount === 1000){
+    showCount++;
+    if(showCount === 1000){
         console.log(timeDuration/timeCount);
+        console.log(timeDuration);
+        showCount = 0;
     }
 });
 
@@ -77,7 +81,7 @@ historicFileSystemReader.readAndParseSync()
 
         let analyticsList = analytics.calculate();
         predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
-        HistoricFileSystemReader.printToFile([analyticsList], "analyticsList", ".txt");
+        HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
 
         analytics.showLoss();
 

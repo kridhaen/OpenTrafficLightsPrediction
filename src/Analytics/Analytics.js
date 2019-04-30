@@ -64,7 +64,7 @@ class Analytics{
         let me_without_0_counter = 0;
         let errors = 0;
         for(let i = 0; i < this.list.length; i++){
-            if(this.list[i][durationName] && this.list[i]["phaseDuration"]){
+            if(Number.isInteger(this.list[i][durationName]) && Number.isInteger(this.list[i]["phaseDuration"])){
                 let a = this.list[i][durationName] - this.list[i]["phaseDuration"];
                 mse += a*a;
                 me += ((a < 0) ? a*-1 : a) ;
@@ -81,8 +81,10 @@ class Analytics{
         mse = mse / (this.list.length-errors);
         me = me / (this.list.length-errors);
         me_without_0 = me_without_0 / me_without_0_counter;
+        console.log("total predictions: "+this.list.length);
+        console.log("succeeded: "+this.list.length-errors);
         console.log("errors: "+errors);
-        console.log("I  | II\n" + "II | I_\n" + "for: "+durationName);
+        console.log("loss calculation for: "+durationName);
         console.log("MSE = "+ mse);
         console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden
         console.log("ME without 0 phase (orange) = "+ me_without_0);
