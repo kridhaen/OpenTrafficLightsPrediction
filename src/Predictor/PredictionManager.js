@@ -16,21 +16,27 @@ class PredictionManager{
                         futureDistribution[key] = distribution[key];
                     }
                 });
-
+                //if futureDistribution = empty -> predictedDuration = NaN
+                let likelyTime = undefined;
                 let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
-                result.setTime(result.getTime() + predictedDuration * 1000);
-                let likelyTime = result.toISOString();  //TODO: bugfix NaN
+                if(predictedDuration !== undefined){
+                    result.setTime(result.getTime() + predictedDuration * 1000);
+                    likelyTime = result.toISOString();
+                }
+                else {
+                    let x = "help";
+                }
                 if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //als undefined, ook gelijk
                     likelyTime = minEndTime;
-                } else if (likelyTime < minEndTime) {
+                } else if (likelyTime!== undefined && likelyTime < minEndTime) {
                     likelyTime = minEndTime;
-                } else if (likelyTime > maxEndTime) {
+                } else if (likelyTime !== undefined && likelyTime > maxEndTime) {
                     likelyTime = maxEndTime;
                 }
-                callback(likelyTime);
+                callback(likelyTime);   //TODO: undefined likelyTime if prediction not possible
             }
         } catch (e) {
-            console.log(e);
+            //console.log(e);
         }
     }
 }
