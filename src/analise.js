@@ -10,7 +10,6 @@ const Helper = require('./Readers/Helper.js');
 const Analytics = require('./Analytics/Analytics.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
-const { fd, tfd, tgfd } = require('./Distributions/__mocks__/distributions.js');
 
 const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
 
@@ -34,11 +33,11 @@ let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => 
     await historicFragmentParser.handleFragment(fragment, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
-        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, undefined, undefined, generatedAtTime); //TODO: uitwerken
+        analytics.add(undefined, generatedAtTime, signalGroup, signalPhase, lastPhase, undefined, undefined, generatedAtTime, generatedAtTime, lastPhaseStart); //TODO: uitwerken
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
-        analytics.add(undefined, lastPhaseStart, signalGroup, signalPhase, signalPhase, minEndTime, maxEndTime, generatedAtTime);
+        analytics.add(undefined, lastPhaseStart, signalGroup, signalPhase, signalPhase, minEndTime, maxEndTime, generatedAtTime, undefined, lastPhaseStart);
         same++
     }, () => {observations++}, undefined);
     let d = process.hrtime(c);
@@ -81,7 +80,7 @@ historicFileSystemReader.readAndParseSync()
         });
 
         //realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
-        console.log("same: "+ same+"\nchanges: "+changes+"\nfragments: "+observations+"\n");
+        console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\n");
 
         let analyticsList = analytics.calculate();
         predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);

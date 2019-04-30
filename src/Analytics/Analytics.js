@@ -10,12 +10,18 @@ class Analytics{
     }
 
     //TODO: lastphase or signalPhase???
-    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime){
+    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, lastPhaseEndDateTime, lastPhaseStartDateTime){
         if(!this.noEndYet[signalGroup]){
             this.noEndYet[signalGroup] = {};
         }
         if(!this.noEndYet[signalGroup][signalPhase]){
             this.noEndYet[signalGroup][signalPhase] = [];
+        }
+        if(!this.noEndYet[signalGroup]){    //bij change is phaseEndDateTime al ingevuld en dus niet nodig, bij same is last = signalPhase en is bovenstaande voldoende
+            this.noEndYet[signalGroup] = {};
+        }
+        if(!this.noEndYet[signalGroup][lastPhase]){
+            this.noEndYet[signalGroup][lastPhase] = [];
         }
         // if(!this.phaseEndChecker[signalGroup]){
         //     this.phaseEndChecker[signalGroup] = {};
@@ -29,6 +35,8 @@ class Analytics{
             "lastPhase": lastPhase,
             "phaseEndDateTime": phaseEndDateTime,
             "phaseStartDateTime": phaseStartDateTime,
+            "lastPhaseEndDateTime": lastPhaseEndDateTime,
+            "lastPhaseStartDateTime": lastPhaseStartDateTime,
             "minEndTime": minEndTime,
             "maxEndTime": maxEndTime,
             "observationTime": observationTime,
@@ -39,14 +47,14 @@ class Analytics{
             "predictedDurationTGFD": undefined,
             "loss": undefined
         };
-        if(phaseEndDateTime !== undefined){
-            let phaseDuration = new Date(phaseEndDateTime).getTime() - new Date(phaseStartDateTime).getTime();
+        if(lastPhaseEndDateTime !== undefined){
+            let phaseDuration = new Date(lastPhaseEndDateTime).getTime() - new Date(lastPhaseStartDateTime).getTime();
             phaseDuration = Math.round(phaseDuration/1000);
             result.phaseDuration = phaseDuration;
 
             for(let i of this.noEndYet[signalGroup][lastPhase]){
                 i.phaseDuration = phaseDuration;
-                i.phaseEndDateTime = phaseEndDateTime;
+                i.phaseEndDateTime = lastPhaseEndDateTime;
             }
             this.noEndYet[signalGroup][lastPhase] = [];
         }
@@ -61,27 +69,33 @@ class Analytics{
 
     calculate(){
         for(let i = 0; i < this.list.length; i++){
-            let { phaseStartDateTime, signalGroup, lastPhase, minEndTime, maxEndTime, observationTime} = this.list[i];
+            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime} = this.list[i];
             let temp = this.list;
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
             let distribution = this.distributionStore.get("fd").get(signalGroup,lastPhase);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
-                temp[i]["lastPhaseLikelyTime"] = likelyTime;
-                let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
-                phaseDuration = Math.round(phaseDuration/1000);
-                temp[i]["predictedDuration"] = phaseDuration;
+            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
+                if(likelyTime !== undefined){
+                    temp[i]["lastPhaseLikelyTime"] = likelyTime;
+                    let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
+                    phaseDuration = Math.round(phaseDuration/1000);
+                    temp[i]["predictedDuration"] = phaseDuration;
+                }
             });
             let distribution2 = this.distributionStore.get("tfd").get(signalGroup,lastPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
-                let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
-                phaseDuration = Math.round(phaseDuration/1000);
-                temp[i]["predictedDurationTFD"] = phaseDuration;
+            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
+                if(likelyTime !== undefined){
+                    let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
+                    phaseDuration = Math.round(phaseDuration/1000);
+                    temp[i]["predictedDurationTFD"] = phaseDuration;
+                }
             });
             let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,lastPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
-                let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
-                phaseDuration = Math.round(phaseDuration/1000);
-                temp[i]["predictedDurationTGFD"] = phaseDuration;
+            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
+                if(likelyTime !== undefined){
+                    let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
+                    phaseDuration = Math.round(phaseDuration/1000);
+                    temp[i]["predictedDurationTGFD"] = phaseDuration;
+                }
             });
         }
         return this.list;
@@ -105,7 +119,7 @@ class Analytics{
             }
             else {
                 errors++;
-                console.log("error in data: predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
+                //console.log("error in data: predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
             }
         }
         mse = mse / (this.list.length-errors);
