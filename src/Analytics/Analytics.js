@@ -1,4 +1,5 @@
 let PredictionManager = require("../Predictor/PredictionManager.js");
+let Helper = require("../Readers/Helper.js");
 
 class Analytics{
     constructor(distributionStore){
@@ -7,7 +8,7 @@ class Analytics{
         this.phaseData = {};
     }
 
-    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC){
+    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime){
         let phaseDuration = new Date(phaseEndDateTime).getTime() - new Date(phaseStartDateTime).getTime();
         phaseDuration = Math.round(phaseDuration/1000);
         this.list.push({
@@ -19,7 +20,6 @@ class Analytics{
             "minEndTime": minEndTime,
             "maxEndTime": maxEndTime,
             "phaseDuration": phaseDuration,
-            "observationUTC": observationUTC,
             "lastPhaseLikelyTime": undefined,
             "predictedDuration": undefined,
             "predictedDurationTFD": undefined,
@@ -32,23 +32,24 @@ class Analytics{
 
     calculate(){
         for(let i = 0; i < this.list.length; i++){
-            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC} = this.list[i];
+            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime} = this.list[i];
             let temp = this.list;
+            let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
             let distribution = this.distributionStore.get("fd").get(signalGroup,lastPhase);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution, (likelyTime) => {
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
                 temp[i]["lastPhaseLikelyTime"] = likelyTime;
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDuration"] = phaseDuration;
             });
             let distribution2 = this.distributionStore.get("tfd").get(signalGroup,lastPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution2, (likelyTime) => {
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDurationTFD"] = phaseDuration;
             });
             let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,lastPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
-            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, undefined, undefined, phaseStartDateTime, distribution3, (likelyTime) => {
+            PredictionManager.predictLikelyTime(signalGroup, lastPhase, "", phaseStartDateTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
                 let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                 phaseDuration = Math.round(phaseDuration/1000);
                 temp[i]["predictedDurationTGFD"] = phaseDuration;
@@ -88,6 +89,7 @@ class Analytics{
         console.log("MSE = "+ mse);
         console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden
         console.log("ME without 0 phase (orange) = "+ me_without_0);
+        console.log("Count predictions without 0 phases = "+me_without_0_counter);
     }
 
     showLoss(){

@@ -32,11 +32,15 @@ let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => 
 
     let c = process.hrtime();
     await historicFragmentParser.handleFragment(fragment, (returnObject) => {
-        let { signalGroup, signalPhase, generatedAtTime, observationUTC, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
-        DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, observationUTC, distributionStore);    //correct
-        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC); //TODO: uitwerken
+        let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
+        DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
+        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, undefined, undefined); //TODO: uitwerken
         changes++;
-    }, () => {same++}, () => {observations++}, undefined);
+    }, (returnObject) => {
+        let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
+        analytics.add(undefined, lastPhaseStart, signalGroup, signalPhase, signalPhase, minEndTime, maxEndTime);
+        same++
+    }, () => {observations++}, undefined);
     let d = process.hrtime(c);
     timeDuration+= (d[1] / 1000000000);
     timeCount++;

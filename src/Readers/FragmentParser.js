@@ -21,7 +21,6 @@ class FragmentParser{
             "generatedAtTime": undefined,
             "minEndTime": undefined,
             "maxEndTime": undefined,
-            "observationUTC": undefined,
             "observation": undefined,
             "store": undefined,
             "prefixes": undefined,
@@ -31,14 +30,13 @@ class FragmentParser{
         };
     }
 
-    static _setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, phaseStart, lastPhaseStart, lastPhase){
+    static _setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, phaseStart, lastPhaseStart, lastPhase){
         returnObject["signalGroup"] = signalGroup;
         returnObject["signalPhase"] = signalPhase;
         returnObject["signalState"] = signalState;
         returnObject["generatedAtTime"] = generatedAtTime;
         returnObject["minEndTime"] = minEndTime;
         returnObject["maxEndTime"] = maxEndTime;
-        returnObject["observationUTC"] = observationUTC;
         returnObject["observation"] = observation;
         returnObject["store"] = store;
         returnObject["prefixes"] = prefixes;
@@ -109,17 +107,9 @@ class FragmentParser{
                         tempMET = Math.round((new Date(maxEndTime).getTime()) / 1000) * 1000;
                         maxEndTime = (new Date(tempMET)).toISOString();
 
-                        let observationUTC = {};
-                        let generatedAtTimeDate = new Date(generatedAtTime);
-                        observationUTC["hour"] = generatedAtTimeDate.getUTCHours();
-                        observationUTC["month"] = generatedAtTimeDate.getUTCMonth();
-                        observationUTC["minute"] = generatedAtTimeDate.getUTCMinutes();
-                        observationUTC["day"] = generatedAtTimeDate.getUTCDay();    //0 == sunday
-                        observationUTC["year"] = generatedAtTimeDate.getUTCFullYear();
-
                         if (this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1) {
                             if (beforePhaseChangeCheck) { //dangerous, not checked validity of observation before phase change, data could be invalid (see checks)
-                                FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, undefined, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, undefined, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                 beforePhaseChangeCheck(returnObject);
                             }
                             if (this.lastPhase[signalGroup] !== signalPhase) {
@@ -132,7 +122,7 @@ class FragmentParser{
                                 }
                                 else{
                                     if (onPhaseChange) {
-                                        FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                        FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                         onPhaseChange(returnObject);
                                     }
 
@@ -150,7 +140,7 @@ class FragmentParser{
                                     this.phaseStart[signalGroup] = -1;
                                 } else {
                                     if (onSamePhase) {
-                                        FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observationUTC, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                        FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                         onSamePhase(returnObject);
                                     }
                                 }
@@ -172,7 +162,7 @@ class FragmentParser{
 
         });
         if(afterHandle){
-            FragmentParser._setReturnObject(returnObject, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, store, prefixes, undefined, undefined);
+            FragmentParser._setReturnObject(returnObject, undefined, undefined, undefined, undefined, undefined, undefined, undefined, store, prefixes, undefined, undefined);
             afterHandle(returnObject);
         }
     }
