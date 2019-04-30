@@ -7,21 +7,41 @@ const FragmentParser = require('./Readers/FragmentParser.js');
 const DistributionManager = require('./Distributions/DistributionManager.js');
 const PredictionManager = require('./Predictor/PredictionManager.js');
 const Helper = require('./Readers/Helper.js');
+const Analytics = require('./Analytics/Analytics.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
+const { fd, tfd, tgfd } = require('./Distributions/__mocks__/distributions.js');
 
 const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
+let analytics = new Analytics(distributionStore);
+let observations = 0;
+let changes = 0;
+let same = 0;
+
+let a = process.hrtime();
+let timeDuration = 0;
+let timeCount = 0;
+
 let historicFragmentParser = new FragmentParser();
 let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
-        await historicFragmentParser.handleFragment(fragment, (returnObject) => {
-            let { signalGroup, signalPhase, generatedAtTime, observationUTC, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
-            DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, observationUTC, distributionStore);    //correct
-    }, undefined, undefined, undefined);
 
+    let c = process.hrtime();
+    await historicFragmentParser.handleFragment(fragment, (returnObject) => {
+        let { signalGroup, signalPhase, generatedAtTime, observationUTC, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
+        DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, observationUTC, distributionStore);    //correct
+        analytics.add(generatedAtTime, lastPhaseStart, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationUTC); //TODO: uitwerken
+        changes++;
+    }, () => {same++}, () => {observations++}, undefined);
+    let d = process.hrtime(c);
+    timeDuration+= (d[1] / 1000000000);
+    timeCount++;
+    if(timeCount === 1000){
+        console.log(timeDuration/timeCount);
+    }
 });
 
 let realTimeFragmentParser = new FragmentParser();
@@ -52,7 +72,13 @@ historicFileSystemReader.readAndParseSync()
             );
         });
 
-        realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
+        //realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
         console.log("same: "+ same+"\nchanges: "+changes+"\nfragments: "+observations+"\n");
+
+        let analyticsList = analytics.calculate();
+        predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
+        HistoricFileSystemReader.printToFile([analyticsList], "analyticsList", ".txt");
+
+        analytics.showLoss();
 
     });
