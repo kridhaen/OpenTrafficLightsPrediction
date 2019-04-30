@@ -6,9 +6,13 @@ class PredictionCalculator{
             count+=frequencyDistribution[duration];
             weightedSum = weightedSum + duration * frequencyDistribution[duration];
         });
-        return Math.round(weightedSum / count);
+        if(count === 0){
+            return undefined;
+        }
+        else {
+            return Math.round(weightedSum / count); //TODO: kan delen door 0 -> NaN
+        }
     }
-
 }
 
 module.exports = PredictionCalculator;
