@@ -1,9 +1,10 @@
 const fs = require('fs');
 
 class HistoricFileSystemReader{
-    constructor(onFile){
+    constructor(folderpath,onFile){
         this.readAndParseSync = this.readAndParseSync.bind(this);
         this.onFile = onFile;
+        this.folderpath = folderpath;
     }
 
     readAndParseSync(){
@@ -11,7 +12,7 @@ class HistoricFileSystemReader{
             let temp = this;
             console.log("\x1b[31m","reading","\x1b[0m");
             this.files = undefined;
-            fs.readdir("./previous", async function(err, files){
+            fs.readdir(this.folderpath, async function(err, files){
                 if(err){
                     console.log(err);
                 }
@@ -19,7 +20,7 @@ class HistoricFileSystemReader{
                 let i = 0;
                 for(let file of files.sort()){  //alle files overlopen, gesorteerd volgens naam, wat overeenkomt met de datum, oudste eerst
                     if(i++%100 === 0) HistoricFileSystemReader.showProgress(i, files.length, "files");
-                    let data = fs.readFileSync("./previous/"+file);
+                    let data = fs.readFileSync(temp.folderpath +"/"+file);
                     //console.log("\x1b[31m","read file","\x1b[0m");
                     let fragment = data.toString();
 
