@@ -9,7 +9,12 @@ class Analytics{
         this.noEndYet = {};
     }
 
+    clearNoEndYetList(signalGroup){
+        this.noEndYet[signalGroup] = {};
+    }
+
     //TODO: lastphase or signalPhase???
+    //phaseEndDateTime never given, phase doesn't know when he will end, only if the previous phase ended in lastPhaseEndDateTime
     add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, lastPhaseEndDateTime, lastPhaseStartDateTime){
         if(!this.noEndYet[signalGroup]){
             this.noEndYet[signalGroup] = {};
@@ -47,10 +52,13 @@ class Analytics{
             "predictedDurationTGFD": undefined,
             "loss": undefined
         };
-        if(lastPhaseEndDateTime !== undefined){
+        if(lastPhaseEndDateTime !== undefined){ //als op faseovergang -> geldt als eindtijd vorige fase -> invullen bij diegene die nog niet waren ingevuld
             let phaseDuration = new Date(lastPhaseEndDateTime).getTime() - new Date(lastPhaseStartDateTime).getTime();
             phaseDuration = Math.round(phaseDuration/1000);
-            result.phaseDuration = phaseDuration;
+
+            //result.phaseDuration = phaseDuration;   // fout, is duration van vorige fase, niet van huidige!!!
+            //dus vorige kan duur, maar huidige moet nog wachten op duur, dus in noEndYet pushen
+            this.noEndYet[signalGroup][signalPhase].push(result); //dus eigenlijk altijd pushen in noEndYet, want phaseEndTime is nooit ingevuld
 
             for(let i of this.noEndYet[signalGroup][lastPhase]){
                 i.phaseDuration = phaseDuration;
@@ -69,11 +77,12 @@ class Analytics{
 
     calculate(){
         for(let i = 0; i < this.list.length; i++){
-            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime} = this.list[i];
+            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, phaseDuration} = this.list[i];
             let temp = this.list;
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
-            let distribution = this.distributionStore.get("fd").get(signalGroup,lastPhase);
-            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
+            let distribution = this.distributionStore.get("fd").get(signalGroup,signalPhase);
+            //TODO: remove phaseDuration param -> debugging
+            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
                 if(likelyTime !== undefined){
                     temp[i]["lastPhaseLikelyTime"] = likelyTime;
                     let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
@@ -81,16 +90,18 @@ class Analytics{
                     temp[i]["predictedDuration"] = phaseDuration;
                 }
             });
-            let distribution2 = this.distributionStore.get("tfd").get(signalGroup,lastPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
-            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
+            let distribution2 = this.distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
+            //TODO: remove phaseDuration param -> debugging
+            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
                 if(likelyTime !== undefined){
                     let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                     phaseDuration = Math.round(phaseDuration/1000);
                     temp[i]["predictedDurationTFD"] = phaseDuration;
                 }
             });
-            let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,lastPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
-            PredictionManager.predictLikelyTime(signalGroup, signalPhase, "", observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
+            let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,signalPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
+            //TODO: remove phaseDuration param -> debugging
+            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
                 if(likelyTime !== undefined){
                     let phaseDuration = new Date(likelyTime) - new Date(phaseStartDateTime);
                     phaseDuration = Math.round(phaseDuration/1000);
@@ -107,6 +118,9 @@ class Analytics{
         let me_without_0 = 0;
         let me_without_0_counter = 0;
         let errors = 0;
+        let noPhaseDuration = 0;
+        let noPrediction = 0;
+        let noPhaseStartDateTime = 0;
         for(let i = 0; i < this.list.length; i++){
             if(Number.isInteger(this.list[i][durationName]) && Number.isInteger(this.list[i]["phaseDuration"])){
                 let a = this.list[i][durationName] - this.list[i]["phaseDuration"];
@@ -118,16 +132,24 @@ class Analytics{
                 }
             }
             else {
+                !Number.isInteger(this.list[i][durationName]) && noPrediction++;
+                !this.list[i]["phaseStartDateTime"] && noPhaseStartDateTime++;
+                !Number.isInteger(this.list[i]["phaseDuration"]) && noPhaseDuration++;
+                let c = this.list[i];
                 errors++;
-                //console.log("error in data: predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
+                //console.log("error in data @"+durationName+": predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
             }
         }
         mse = mse / (this.list.length-errors);
         me = me / (this.list.length-errors);
         me_without_0 = me_without_0 / me_without_0_counter;
+        console.log("-------------------------------------------------------------");
         console.log("total predictions: "+this.list.length);
         console.log("succeeded: "+(this.list.length-errors));
         console.log("errors: "+errors);
+        console.log(" -> no phaseDuration: "+ noPhaseDuration);
+        console.log(" -> no prediction: "+ noPrediction);
+        console.log(" -> no phaseStartDateTime: "+ noPhaseStartDateTime);
         console.log("loss calculation for: "+durationName);
         console.log("MSE = "+ mse);
         console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden

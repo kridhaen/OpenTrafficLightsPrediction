@@ -24,7 +24,7 @@ class HistoricFileSystemReader{
                     //console.log("\x1b[31m","read file","\x1b[0m");
                     let fragment = data.toString();
 
-                    await temp.onFile(fragment);
+                    await temp.onFile(fragment, file);      //TODO: remove file param -> debugging
                 }
                 console.log("\x1b[31m","read complete","\x1b[0m");
                 // HistoricFileSystemReader.printToFile(frequencyDistribution.createDistributionsCSV(),"./csv_data/csv_data_",".csv");

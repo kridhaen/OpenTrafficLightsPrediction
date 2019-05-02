@@ -1,9 +1,9 @@
 const PredictionCalculator = require('./PredicionCalculator.js');
 
-//TODO: signalState not used
 //TODO: als min === max, kan al terug geven voordat moet worden gerekend
+//TODO: remove phaseDuration param -> debugging
 class PredictionManager{
-    static predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, callback){
+    static predictLikelyTime(phaseDuration, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, callback){
         try {
             if (distribution && Object.keys(distribution).length > 0) {
                 let result = new Date(phaseStart);
@@ -16,22 +16,27 @@ class PredictionManager{
                         futureDistribution[key] = distribution[key];
                     }
                 });
-                //if futureDistribution = empty -> predictedDuration = NaN
+                //if futureDistribution = empty -> predictedDuration = undefined
                 let likelyTime = undefined;
                 let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
                 if(predictedDuration !== undefined){
                     result.setTime(result.getTime() + predictedDuration * 1000);
                     likelyTime = result.toISOString();
                 }
-                else {
-                    let x = "help";
-                }
-                if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //als undefined, ook gelijk
+                if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //TODO: min en max niet precies -> duration komt soms niet helemaal overeen (zie hieronder) -> voorspelling zit afwijking op!!!
                     likelyTime = minEndTime;
                 } else if (likelyTime!== undefined && likelyTime < minEndTime) {
                     likelyTime = minEndTime;
                 } else if (likelyTime !== undefined && likelyTime > maxEndTime) {
                     likelyTime = maxEndTime;
+                }
+                //TODO: als geen prediction meer mogelijk, maar alle historische waarden liggen onder minEndTime -> minEndTime als prediction (en omgekeerd voor max)?
+                //debug
+                if(maxEndTime && phaseDuration && new Date(phaseStart).getTime()+phaseDuration*1000 > new Date(maxEndTime).getTime()+2000){
+                    console.log("Phase longer than max! -> phaseDuration: "+phaseDuration +" predictedDuration: "+ predictedDuration+ " maxEndTime: "+maxEndTime +" endTime: "+new Date(new Date(phaseStart).getTime()+phaseDuration*1000).toISOString());
+                }
+                if(maxEndTime && observationTime.getTime() > new Date(maxEndTime).getTime()){
+                    console.log("observation longer than max! -> observation: "+observationTime.toISOString() + " maxEndTime: "+ maxEndTime);
                 }
                 callback(likelyTime);   //TODO: undefined likelyTime if prediction not possible
             }

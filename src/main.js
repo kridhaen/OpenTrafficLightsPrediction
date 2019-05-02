@@ -11,13 +11,14 @@ const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
 const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
+const filepath = "./previous";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
 let historicFragmentParser = new FragmentParser();
-let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
-        await historicFragmentParser.handleFragment(fragment, (returnObject) => {
+let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment) => {
+        await historicFragmentParser.handleFragment(fragment, undefined, (returnObject) => {
             let { signalGroup, signalPhase, generatedAtTime, observationUTC, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
             DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, observationUTC, distributionStore);    //correct
     }, undefined, undefined, undefined);

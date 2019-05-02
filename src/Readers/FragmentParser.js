@@ -11,22 +11,35 @@ class FragmentParser{
         this.lastMaxEndTime = {};   //als maxEndTime van de vorige meting kleiner is dan van de huidige, en de fase is niet aangepast, dan ontbreken waarschijnlijk enkele fragmenten
         this.lastMinEndTime = {};
         this.lastObservation = {};
+
+        this.startUpObservations = 0;
+        this.generatedBeforeLastErrors = 0;
+        this.onSamePhaseResets = 0;
+        this.onPhaseChangeResets = 0;
+    }
+
+    printDebugInfo(){
+        console.log("   FragmentParser debug info:");
+        console.log("    - startUpObservations: "+this.startUpObservations);
+        console.log("    - generatedBeforeLastErrors: "+this.generatedBeforeLastErrors);
+        console.log("    - onSamePhaseResets: "+this.onSamePhaseResets);
+        console.log("    - onPhaseChangeResets: "+this.onPhaseChangeResets);
     }
 
     static _initReturnObject(){
         return {
-            "signalGroup": undefined,
-            "signalPhase": undefined,
-            "signalState": undefined,
-            "generatedAtTime": undefined,
-            "minEndTime": undefined,
-            "maxEndTime": undefined,
-            "observation": undefined,
-            "store": undefined,
-            "prefixes": undefined,
-            "phaseStart": undefined,
-            "lastPhaseStart": undefined,
-            "lastPhase": undefined
+            "signalGroup": undefined,   //signalGroup of current observation
+            "signalPhase": undefined,   //signalPhase of current observation
+            "signalState": undefined,   //signalState quad (not used)
+            "generatedAtTime": undefined,   //generation time of current observation
+            "minEndTime": undefined,    //minEndTime defined in current observation
+            "maxEndTime": undefined,    //maxEndTime defined in current observation
+            "observation": undefined,   //observation quad (not used)
+            "store": undefined, //n3 store object
+            "prefixes": undefined,  //prefixes in trig rdf fragment
+            "phaseStart": undefined,    //start of phase of current observation
+            "lastPhaseStart": undefined,    //start of phase of last observation
+            "lastPhase": undefined  //phase of last observation
         };
     }
 
@@ -45,7 +58,8 @@ class FragmentParser{
         returnObject["lastPhase"] = lastPhase;
     };
 
-    async handleFragment(fragment, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle){
+    //TODO: remove file param -> debugging
+    async handleFragment(fragment, file, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle, onFragmentError){
         let returnObject = FragmentParser._initReturnObject();
         let { store, prefixes } = await Helper.parseAndStoreQuads(fragment);
 
@@ -80,9 +94,9 @@ class FragmentParser{
         ).forEach((observation) => {
             let generatedAtTime = observation.object.value;
 
-            //TODO: in plaats van afronden, bij vergelijking +1 en -1 ook nog hetzelfde rekenen (interval)
-            let tempGAT = Math.round((new Date(generatedAtTime).getTime())/1000)*1000;   //afronden alle data tot op seconde, anders soms precies kleine verschillen op milliseconden
-            generatedAtTime = new Date(tempGAT).toISOString();
+            //TODO: in plaats van afronden, bij vergelijking +1 en -1 ook nog hetzelfde rekenen (interval)  -> toegepast, veel meer nodig, onnauwkeurige data
+            // let tempGAT = Math.round((new Date(generatedAtTime).getTime())/1)*1;   //afronden alle data tot op seconde, anders soms precies kleine verschillen op milliseconden
+            // generatedAtTime = new Date(tempGAT).toISOString();
 
             signalGroups.forEach(signalGroup => {
                 let error = 0;
@@ -90,6 +104,7 @@ class FragmentParser{
                     if (new Date(this.lastObservation[signalGroup]).getTime() > new Date(generatedAtTime).getTime()) {
                         console.log("last observation bigger than new: " + this.lastObservation[signalGroup] + " - " + generatedAtTime);
                         //TODO: hoe kan dit? Duplicate observaties?
+                        this.generatedBeforeLastErrors++;
                         error = 1;
                     }
                 }
@@ -102,10 +117,15 @@ class FragmentParser{
                         let maxEndTime = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#maxEndTime'), null, observation.subject)[0].object.value;
                         let signalPhase = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#signalPhase'), null, observation.subject)[0].object.value;
 
-                        let tempMET = Math.round((new Date(minEndTime).getTime()) / 1000) * 1000; //afronden alle data tot op seconde, anders soms precies kleine verschillen op milliseconden
-                        minEndTime = (new Date(tempMET)).toISOString();
-                        tempMET = Math.round((new Date(maxEndTime).getTime()) / 1000) * 1000;
-                        maxEndTime = (new Date(tempMET)).toISOString();
+                        // let tempMET = Math.round((new Date(minEndTime).getTime()) / 1) * 1; //afronden alle data tot op seconde, anders soms precies kleine verschillen op milliseconden
+                        // minEndTime = (new Date(tempMET)).toISOString();
+                        // tempMET = Math.round((new Date(maxEndTime).getTime()) / 1) * 1;
+                        // maxEndTime = (new Date(tempMET)).toISOString();
+
+                        //debug
+                        if(generatedAtTime > maxEndTime){
+                            console.log("error in fragmentParser: "+file);
+                        }
 
                         if (this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1) {
                             if (beforePhaseChangeCheck) { //dangerous, not checked validity of observation before phase change, data could be invalid (see checks)
@@ -114,11 +134,24 @@ class FragmentParser{
                             }
                             if (this.lastPhase[signalGroup] !== signalPhase) {
                                 //phase change
-                                if((this.lastMaxEndTime[signalGroup] !== -1 && generatedAtTime > this.lastMaxEndTime[signalGroup])
-                                    || (this.lastMinEndTime[signalGroup] !== -1 && generatedAtTime < this.lastMinEndTime[signalGroup])){
+
+                                //kruispunt publiceerd om de 200 ms, observer neemt waar bij aanpassing aan fase. Als fase gaat aanpassen (maxEndTime), gaat hij nog een bericht sturen
+                                //dat aangeeft dat het nog niet is aangepast, maar NU gaat aanpassen. De observer neemt pas het volgende bericht dat weldegelijk is aangepast weer,
+                                //en dat bericht komt dus 200 ms later dan het werkelijke moment waarop de aanpassing ging gebeuren.
+                                //vandaar de 200 ms check
+                                //soms is generatedAtTime-200ms net 1 ms later dan lastMaxEndTime
+                                //nog 1 ms extra rekenen
+                                //soms ook net wat langer (2 - 5 ms)
+                                //bij min hoeft niet worden aangepast, want komt zelden voor (anders ook +205 bij lastMinEndTime)
+                                if((this.lastMaxEndTime[signalGroup] !== -1 && new Date(generatedAtTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+210)
+                                    || (this.lastMinEndTime[signalGroup] !== -1 && generatedAtTime < this.lastMinEndTime[signalGroup])
+                                ){
                                     //phase can't end after maxEndTime and before minEndTime, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
                                     this.phaseStart[signalGroup] = -1;
+                                    this.onPhaseChangeResets++;
+                                    console.log("onPhaseChangeError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
+                                    onFragmentError(signalGroup);
                                 }
                                 else{
                                     if (onPhaseChange) {
@@ -129,15 +162,25 @@ class FragmentParser{
                                     //prepare for next phase
                                     this.lastPhase[signalGroup] = signalPhase;
                                     this.phaseStart[signalGroup] = generatedAtTime;
+
+                                    this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
+                                    this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
                                 }
                             }
                             else {
                                 //same phase
-                                if ((this.lastMaxEndTime[signalGroup] !== -1 && maxEndTime > this.lastMaxEndTime[signalGroup])
-                                    || (this.lastMinEndTime[signalGroup] !== -1 && minEndTime < this.lastMinEndTime[signalGroup])) {
+
+                                //lodi.ilabt.imec.be onnauwkeurige data -> soms meerdere observaties max verhoogt
+                                if ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+1005)
+                                    || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime()+1005 < new Date(this.lastMinEndTime[signalGroup]).getTime())
+                                ) {
                                     //maxEndTime can not increase for same phase, minEndTime can not decrease, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
                                     this.phaseStart[signalGroup] = -1;
+                                    console.log("onSamePhaseError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " minEndTime: "+minEndTime+" lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
+                                    this.onSamePhaseResets++;
+
+                                    onFragmentError(signalGroup);
                                 } else {
                                     if (onSamePhase) {
                                         FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
@@ -147,6 +190,7 @@ class FragmentParser{
                             }
                         }
                         else {
+                            this.startUpObservations++;
                             if (this.phaseStart[signalGroup] === -1 && this.lastPhase[signalGroup] === -1) {
                                 this.lastPhase[signalGroup] = signalPhase;
                             } else if (this.lastPhase[signalGroup] !== signalPhase) {
