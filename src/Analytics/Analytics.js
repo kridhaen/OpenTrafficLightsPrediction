@@ -7,9 +7,13 @@ class Analytics{
         this.list = [];
         // this.phaseEndChecker = {};
         this.noEndYet = {};
+        this.clearedNoEndYetListEntries = 0;
     }
 
     clearNoEndYetList(signalGroup){
+        Object.keys(this.noEndYet[signalGroup]).forEach((item) => {
+            this.clearedNoEndYetListEntries += this.noEndYet[signalGroup][item].length;
+        });
         this.noEndYet[signalGroup] = {};
     }
 
@@ -121,12 +125,13 @@ class Analytics{
         let noPhaseDuration = 0;
         let noPrediction = 0;
         let noPhaseStartDateTime = 0;
+        let noPhaseEndDateTime = 0;
         for(let i = 0; i < this.list.length; i++){
             if(Number.isInteger(this.list[i][durationName]) && Number.isInteger(this.list[i]["phaseDuration"])){
                 let a = this.list[i][durationName] - this.list[i]["phaseDuration"];
                 mse += a*a;
                 me += ((a < 0) ? a*-1 : a) ;
-                if(this.list[i]["signalPhase"] !== "https://w3id.org/opentrafficlights/thesauri/signalphase/3"){
+                if(this.list[i]["signalPhase"] !== "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
                     me_without_0 += ((a < 0) ? a*-1 : a) ;
                     me_without_0_counter ++;
                 }
@@ -134,8 +139,9 @@ class Analytics{
             else {
                 !Number.isInteger(this.list[i][durationName]) && noPrediction++;
                 !this.list[i]["phaseStartDateTime"] && noPhaseStartDateTime++;
+                !this.list[i]["phaseEndDateTime"] && noPhaseEndDateTime++;
                 !Number.isInteger(this.list[i]["phaseDuration"]) && noPhaseDuration++;
-                let c = this.list[i];
+                let c = this.list[i];   //TODO: remove debugging code
                 errors++;
                 //console.log("error in data @"+durationName+": predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
             }
@@ -150,6 +156,9 @@ class Analytics{
         console.log(" -> no phaseDuration: "+ noPhaseDuration);
         console.log(" -> no prediction: "+ noPrediction);
         console.log(" -> no phaseStartDateTime: "+ noPhaseStartDateTime);
+        console.log(" -> no phaseEndDateTime: "+ noPhaseEndDateTime);
+        console.log("debug info:");
+        console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
         console.log("loss calculation for: "+durationName);
         console.log("MSE = "+ mse);
         console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden

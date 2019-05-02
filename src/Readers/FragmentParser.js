@@ -12,15 +12,20 @@ class FragmentParser{
         this.lastMinEndTime = {};
         this.lastObservation = {};
 
-        this.startUpObservations = 0;
-        this.generatedBeforeLastErrors = 0;
-        this.onSamePhaseResets = 0;
-        this.onPhaseChangeResets = 0;
+        //debug
+        this.startUpObservations = 0;   //count observations needed for startup at start or after reset
+        this.generatedBeforeLastErrors = 0; //count if generatedAtTime > last observation generatedAtTime
+        this.onSamePhaseResets = 0; //count samePhase resets
+        this.onPhaseChangeResets = 0;   //count phaseChange resets
+
+        this.realStartUpObservations = 0;   //count observations needed for startup
+        this.realStartUp = {};  //is true if startup completed
     }
 
     printDebugInfo(){
         console.log("   FragmentParser debug info:");
-        console.log("    - startUpObservations: "+this.startUpObservations);
+        console.log("    - startUpObservations (reset included): "+this.startUpObservations);
+        console.log("    - realStartUpObservations (startup only): "+this.realStartUpObservations);
         console.log("    - generatedBeforeLastErrors: "+this.generatedBeforeLastErrors);
         console.log("    - onSamePhaseResets: "+this.onSamePhaseResets);
         console.log("    - onPhaseChangeResets: "+this.onPhaseChangeResets);
@@ -82,6 +87,9 @@ class FragmentParser{
             if(!this.lastObservation[quad.subject.value]){
                 this.lastObservation[quad.subject.value] = undefined;
             }
+            if(!this.realStartUp[quad.subject.value]){
+                this.realStartUp[quad.subject.value] = 0;
+            }
         });
 
         //overlopen van alle observaties in een fragment, gesorteerd met oudste eerst
@@ -128,6 +136,9 @@ class FragmentParser{
                         }
 
                         if (this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1) {
+                            if(this.realStartUp[signalGroup] === 0){    //TODO: debug info
+                                this.realStartUp[signalGroup] = 1;   //debug info
+                            }
                             if (beforePhaseChangeCheck) { //dangerous, not checked validity of observation before phase change, data could be invalid (see checks)
                                 FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, undefined, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                 beforePhaseChangeCheck(returnObject);
@@ -151,7 +162,9 @@ class FragmentParser{
                                     this.phaseStart[signalGroup] = -1;
                                     this.onPhaseChangeResets++;
                                     console.log("onPhaseChangeError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
-                                    onFragmentError(signalGroup);
+                                    if(onFragmentError){
+                                        onFragmentError(signalGroup);
+                                    }
                                 }
                                 else{
                                     if (onPhaseChange) {
@@ -180,7 +193,9 @@ class FragmentParser{
                                     console.log("onSamePhaseError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " minEndTime: "+minEndTime+" lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
                                     this.onSamePhaseResets++;
 
-                                    onFragmentError(signalGroup);
+                                    if(onFragmentError){
+                                        onFragmentError(signalGroup);
+                                    }
                                 } else {
                                     if (onSamePhase) {
                                         FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
@@ -190,6 +205,9 @@ class FragmentParser{
                             }
                         }
                         else {
+                            if(this.realStartUp[signalGroup] === 0){    //TODO: debug info
+                                this.realStartUpObservations++;
+                            }
                             this.startUpObservations++;
                             if (this.phaseStart[signalGroup] === -1 && this.lastPhase[signalGroup] === -1) {
                                 this.lastPhase[signalGroup] = signalPhase;
