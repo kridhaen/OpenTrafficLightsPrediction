@@ -14,7 +14,7 @@ test('predictLikelyTime: min < likely < max',() => {
     let maxEndTime = new Date(new Date(testTime).getTime() +20000).toISOString();
     let distribution = frequencyDistribution.get(signalGroup,signalPhase);
     expect.assertions(4);
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual("2019-04-13T16:57:41.000Z");
         expect(likelyTime).not.toEqual(testTime);
         expect(likelyTime).not.toEqual(minEndTime);
@@ -35,7 +35,7 @@ test('predictLikelyTime: prediction < minEndTime',() => {
     let maxEndTime = new Date(new Date(testTime).getTime() +20000).toISOString();
     let distribution = frequencyDistribution.get(signalGroup,signalPhase);
     expect.assertions(3);
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual(minEndTime);
         expect(likelyTime).not.toEqual(maxEndTime);
         expect(likelyTime).not.toEqual(testTime);
@@ -55,7 +55,7 @@ test('predictLikelyTime: prediction > maxEndTime',() => {
     let maxEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
     let distribution = frequencyDistribution.get(signalGroup,signalPhase);
     expect.assertions(3);
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual(maxEndTime);
         expect(likelyTime).not.toEqual(minEndTime);
         expect(likelyTime).not.toEqual(testTime);
@@ -75,7 +75,7 @@ test('predictLikelyTime: minEndTime = maxEndTime',() => {
     let maxEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
     let distribution = frequencyDistribution.get(signalGroup,signalPhase);
     expect.assertions(3);
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual(maxEndTime);
         expect(likelyTime).toEqual(minEndTime);
         expect(likelyTime).not.toEqual(testTime);
@@ -98,13 +98,13 @@ test('predictLikelyTime: min < likely < max and generatedAtTime in distribution'
     let maxEndTime = new Date(new Date(testTime).getTime() + 25000).toISOString();
     let distribution = frequencyDistribution.get(signalGroup,signalPhase);
     expect.assertions(8);
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime1, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime1, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual("2019-04-13T16:57:46.000Z");
         expect(likelyTime).not.toEqual(testTime);
         expect(likelyTime).not.toEqual(minEndTime);
         expect(likelyTime).not.toEqual(maxEndTime);
     });
-    PredictionManager.predictLikelyTime(signalGroup, signalPhase, "state", generatedAtTime2, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime2, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual("2019-04-13T16:57:51.000Z");
         expect(likelyTime).not.toEqual(testTime);
         expect(likelyTime).not.toEqual(minEndTime);
@@ -126,7 +126,7 @@ test('predictLikelyTime: distribution is empty',() => {
     let maxEndTime = new Date(new Date(testTime).getTime() +10000).toISOString();
     let distribution = frequencyDistribution.get("a","d");
     expect.assertions(0);
-    PredictionManager.predictLikelyTime("a", "d", "state", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+    PredictionManager.predictLikelyTime(undefined, "a", "d", generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
         expect(likelyTime).toEqual(maxEndTime);
         expect(likelyTime).toEqual(minEndTime);
         expect(likelyTime).not.toEqual(testTime);
