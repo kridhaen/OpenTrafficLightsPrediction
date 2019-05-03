@@ -165,6 +165,8 @@ class FragmentParser{
                                     if(onFragmentError){
                                         onFragmentError(signalGroup);
                                     }
+                                    this.lastMaxEndTime[signalGroup] = -1;  //maximale eindtijd laatste fragment
+                                    this.lastMinEndTime[signalGroup] = -1; //minimale eindtijd laatste fragment
                                 }
                                 else{
                                     if (onPhaseChange) {
@@ -196,11 +198,15 @@ class FragmentParser{
                                     if(onFragmentError){
                                         onFragmentError(signalGroup);
                                     }
+                                    this.lastMaxEndTime[signalGroup] = -1;  //maximale eindtijd laatste fragment
+                                    this.lastMinEndTime[signalGroup] = -1; //minimale eindtijd laatste fragment
                                 } else {
                                     if (onSamePhase) {
                                         FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
                                         onSamePhase(returnObject);
                                     }
+                                    this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
+                                    this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
                                 }
                             }
                         }
@@ -215,9 +221,11 @@ class FragmentParser{
                                 this.lastPhase[signalGroup] = signalPhase;
                                 this.phaseStart[signalGroup] = generatedAtTime;
                             }
+                            this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
+                            this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
                         }
-                        this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
-                        this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
+                        // this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
+                        // this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
                     }
                 }
             });
