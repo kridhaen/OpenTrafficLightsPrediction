@@ -3,6 +3,7 @@ const TimeFrequencyDistribution = require('./Types/TimeFrequencyDistribution.js'
 const TimeGroupedFrequencyDistribution = require('./Types/TimeGroupedFrequencyDistribution.js');
 const Helper = require("../Readers/Helper.js");
 
+//TODO: remove old data? when?
 class DistributionManager{
     static createDistributions(distributionStore){
         let timeFrequencyDistribution = new TimeFrequencyDistribution();

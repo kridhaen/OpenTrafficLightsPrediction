@@ -2,6 +2,7 @@ const PredictionCalculator = require('./PredicionCalculator.js');
 
 //TODO: als min === max, kan al terug geven voordat moet worden gerekend
 //TODO: remove phaseDuration param -> debugging
+//TODO: confidence -> vb %dat de predictedValue wel degelijk voorkwam tov alle voorkomens (die ook nog kunnen voorkomen, dus in futureDistribution)
 class PredictionManager{
     static predictLikelyTime(phaseDuration, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, callback){
         try {
