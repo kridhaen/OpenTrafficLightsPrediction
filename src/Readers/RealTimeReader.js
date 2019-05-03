@@ -17,6 +17,9 @@ class RealTimeReader{
                 await this.onLatest(latest);
                 console.log("\x1b[36m","latest handling complete","\x1b[0m")
             }
+            else{
+                console.log("\x1b[36m","no changes latest","\x1b[0m");
+            }
         }
         else {
             this.lastLatest = latest;
