@@ -8,13 +8,15 @@ class PredictionPublisher{
         this.app.use(cors());
         this.app.get('/', (req, res) => res.send("OpenTrafficLightsPrediction server running!"));
         this.server = undefined;
+        this.latestData = undefined;
     }
 
     setLatestEndpoint(data){
+        this.latestData = data;
         this.app.get('/latest', (req, res) => {
             res.set('Content-Type','application/trig');
-            if(data){
-                res.send(data);
+            if(this.latestData){
+                res.send(this.latestData);
             }
             else{
                 res.status(404).send();
