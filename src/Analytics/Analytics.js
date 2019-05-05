@@ -11,9 +11,11 @@ class Analytics{
     }
 
     clearNoEndYetList(signalGroup){
-        Object.keys(this.noEndYet[signalGroup]).forEach((item) => {
-            this.clearedNoEndYetListEntries += this.noEndYet[signalGroup][item].length;
-        });
+        if(this.noEndYet[signalGroup]){
+            Object.keys(this.noEndYet[signalGroup]).forEach((item) => {
+                this.clearedNoEndYetListEntries += this.noEndYet[signalGroup][item].length;
+            });
+        }
         this.noEndYet[signalGroup] = {};
     }
 
