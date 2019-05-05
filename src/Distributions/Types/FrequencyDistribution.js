@@ -22,6 +22,14 @@ class FrequencyDistribution{
         return this.frequencyDistribution;
     }
 
+    get(signalGroup, signalPhase){
+        if(this.frequencyDistribution[signalGroup]
+            && this.frequencyDistribution[signalGroup][signalPhase]
+        ){
+            return this.frequencyDistribution[signalGroup][signalPhase];
+        }
+    }
+
     createDistributionsCSV(){
         let output = [];
         Object.keys(this.frequencyDistribution).forEach((signalGroup) => {

@@ -20,6 +20,28 @@ it('get /latest', () => {
         .expect(200);
 });
 
+it('get /latest', () => {
+    let predictionPublisher = new PredictionPublisher(8080);
+    predictionPublisher.setLatestEndpoint('test');
+    expect.assertions(2);
+    return request(predictionPublisher._getExpressAppForUsageInTests())
+        .get('/latest')
+        .expect('Content-Type','application/trig; charset=utf-8')
+        .expect(200)
+        .then((response) => {
+            expect(response.text).toEqual("test");
+            predictionPublisher.setLatestEndpoint('test2');
+            return request(predictionPublisher._getExpressAppForUsageInTests())
+                .get('/latest')
+                .expect('Content-Type','application/trig; charset=utf-8')
+                .expect(200)
+                .then((response) => {
+                    expect(response.text).toEqual("test2");
+                });
+        }
+        );
+});
+
 it('get /latest 404 no data', () => {
     let predictionPublisher = new PredictionPublisher(8080);
     predictionPublisher.setLatestEndpoint(undefined);

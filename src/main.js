@@ -8,19 +8,21 @@ const DistributionManager = require('./Distributions/DistributionManager.js');
 const PredictionManager = require('./Predictor/PredictionManager.js');
 const Helper = require('./Readers/Helper.js');
 const { DataFactory } = n3;
-const { namedNode, literal, defaultGraph, quad } = DataFactory;
+const { namedNode, literal } = DataFactory;
 
 const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
+const filepath = "./previous1";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
 let historicFragmentParser = new FragmentParser();
-let historicFileSystemReader = new HistoricFileSystemReader(async (fragment) => {
-        await historicFragmentParser.handleFragment(fragment, (returnObject) => {
-            let { signalGroup, generatedAtTime, observationUTC, phaseStart, lastPhase } = returnObject;
-            DistributionManager.storeInDistribution(generatedAtTime, phaseStart, signalGroup, lastPhase, observationUTC, distributionStore);
+let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment, file) => {
+        await historicFragmentParser.handleFragment(fragment, file, (returnObject) => {
+            let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase} = returnObject;
+            DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
     }, undefined, undefined, undefined);
+
 });
 
 let realTimeFragmentParser = new FragmentParser();
@@ -34,19 +36,29 @@ historicFileSystemReader.readAndParseSync()
         predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
 
         let realTimeReader = new RealTimeReader(datasetUrl, async (latest) => {
-            await realTimeFragmentParser.handleFragment(latest, undefined, undefined,
+            await realTimeFragmentParser.handleFragment(latest, undefined,
                 (returnObject) => {
-                    let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, phaseStart } = returnObject;
-                    PredictionManager.predictLikelyTime(signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, phaseStart, distributionStore, (likelyTime) => {
+                    let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase, phaseStart } = returnObject;
+                    let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);
+                    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
                         store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
                     })
                 },
+                (returnObject) => {
+                    let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase, phaseStart } = returnObject;
+                    let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);
+                    PredictionManager.predictLikelyTime(undefined, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, (likelyTime) => {
+                        store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
+                    })
+                },
+                undefined,
                 async (returnObject) => {
                     let { store, prefixes } = returnObject;
                     await Helper.writeN3Store(store, prefixes).then((result) => {predictionPublisher.setLatestEndpoint(result)});
                 }
             );
         });
-        realTimeReader.getLatestCyclic(1000);
+
+        realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
 
     });

@@ -24,6 +24,17 @@ class Helper{
             await writer.end((error, result) => {resolve(result)});
         });
     }
+
+    static splitDateInParts(timeDate){
+        let result = {};
+        let toDate = new Date(timeDate);
+        result["hour"] = toDate.getUTCHours();
+        result["month"] = toDate.getUTCMonth();
+        result["minute"] = toDate.getUTCMinutes();
+        result["day"] = toDate.getUTCDay();    //0 == sunday
+        result["year"] = toDate.getUTCFullYear();
+        return result;
+    }
 }
 
 module.exports = Helper;
