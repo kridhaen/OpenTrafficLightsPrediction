@@ -116,6 +116,60 @@ class Analytics{
         return this.list;
     }
 
+    _calculateLossExperimental(durationName){
+        let mse = 0;
+        let me = 0;
+        let me_without_0 = 0;
+        let me_without_0_counter = 0;
+        let errors = 0;
+        let noPhaseDuration = 0;
+        let noPrediction = 0;
+        let noPhaseStartDateTime = 0;
+        let noPhaseEndDateTime = 0;
+        let minMaxSame = 0;
+        for(let i = 0; i < this.list.length; i++) {
+            if (Number.isInteger(this.list[i][durationName]) && Number.isInteger(this.list[i]["phaseDuration"])) {
+                if (this.list[i]["minEndTime"] === this.list[i]["maxEndTime"]) {
+                    minMaxSame++;
+                } else {
+                    let a = this.list[i][durationName] - this.list[i]["phaseDuration"];
+                    mse += a * a;
+                    me += ((a < 0) ? a * -1 : a);
+                    if (this.list[i]["signalPhase"] !== "https://w3id.org/opentrafficlights/thesauri/signalphase/0") {
+                        me_without_0 += ((a < 0) ? a * -1 : a);
+                        me_without_0_counter++;
+                    }
+                }
+            } else {
+                !Number.isInteger(this.list[i][durationName]) && noPrediction++;
+                !this.list[i]["phaseStartDateTime"] && noPhaseStartDateTime++;
+                !this.list[i]["phaseEndDateTime"] && noPhaseEndDateTime++;
+                !Number.isInteger(this.list[i]["phaseDuration"]) && noPhaseDuration++;
+                let c = this.list[i];   //TODO: remove debugging code
+                errors++;
+                //console.log("error in data @"+durationName+": predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
+            }
+        }
+        mse = mse / (this.list.length-errors);
+        me = me / (this.list.length-errors);
+        me_without_0 = me_without_0 / me_without_0_counter;
+        console.log("-------------------------------------------------------------");
+        console.log("total predictions: "+this.list.length);
+        console.log("succeeded: "+(this.list.length-errors));
+        console.log("errors: "+errors);
+        console.log(" -> no phaseDuration: "+ noPhaseDuration);
+        console.log(" -> no prediction: "+ noPrediction);
+        console.log(" -> no phaseStartDateTime: "+ noPhaseStartDateTime);
+        console.log(" -> no phaseEndDateTime: "+ noPhaseEndDateTime);
+        console.log("debug info:");
+        console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
+        console.log("loss calculation for: "+durationName);
+        console.log("MSE = "+ mse);
+        console.log("ME = "+ me);   //oranje fase zijn altijd correct, dus halen waarschijnlijk de gemiddelde error naar beneden
+        console.log("ME without 0 phase (orange) = "+ me_without_0);
+        console.log("Count predictions without 0 phases = "+me_without_0_counter);
+    }
+
     _calculateLoss(durationName){ //TODO: if likelyTime is undef? wordt gedeeld door totaal aantal, maar zijn die ook allemaal ingevuld? Hierboven is phaseDuration dan niet te groot? of is het niet ingevuld?
         let mse = 0;
         let me = 0;
