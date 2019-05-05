@@ -132,7 +132,7 @@ class FragmentParser{
 
                         //debug
                         if(generatedAtTime > maxEndTime){
-                            console.log("error in fragmentParser: "+file);
+                            console.log("file contains observation generated after maxEndTime: "+file);
                         }
 
                         if (this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1) {
@@ -161,7 +161,7 @@ class FragmentParser{
                                     this.lastPhase[signalGroup] = -1;   //reset
                                     this.phaseStart[signalGroup] = -1;
                                     this.onPhaseChangeResets++;
-                                    console.log("onPhaseChangeError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
+                                    console.log("onPhaseChangeError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " lastMinEndTime: "+this.lastMinEndTime[signalGroup] + " last observation (gereratedAtTime): "+this.lastObservation[signalGroup]);
                                     if(onFragmentError){
                                         onFragmentError(signalGroup);
                                     }
@@ -192,7 +192,7 @@ class FragmentParser{
                                     //maxEndTime can not increase for same phase, minEndTime can not decrease, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
                                     this.phaseStart[signalGroup] = -1;
-                                    console.log("onSamePhaseError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " minEndTime: "+minEndTime+" lastMinEndTime: "+this.lastMinEndTime[signalGroup]);
+                                    console.log("onSamePhaseError: "+file + " generatedAtTime: "+ generatedAtTime + " maxEndTime: "+maxEndTime+ " lastMaxEndTime: "+ this.lastMaxEndTime[signalGroup] + " minEndTime: "+minEndTime+" lastMinEndTime: "+this.lastMinEndTime[signalGroup] + " last observation (gereratedAtTime): "+this.lastObservation[signalGroup]);
                                     this.onSamePhaseResets++;
 
                                     if(onFragmentError){
