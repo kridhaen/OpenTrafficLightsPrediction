@@ -62,6 +62,21 @@ class PredictionCalculator{
             return parseInt(result, 10);
         }
     }
+
+    static calculateMostCommonDuration(frequencyDistribution){
+        let result = undefined;
+        Object.keys(frequencyDistribution).forEach((duration) => {
+            if(result === undefined){
+                result = duration;
+            }
+            else if(frequencyDistribution[duration] > frequencyDistribution[result]){
+                result = duration;
+            }
+        });
+        return result;
+    }
+
+    
 }
 
 module.exports = PredictionCalculator;
