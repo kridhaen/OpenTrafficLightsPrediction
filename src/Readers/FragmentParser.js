@@ -23,12 +23,14 @@ class FragmentParser{
     }
 
     printDebugInfo(){
+        console.log("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
         console.log("   FragmentParser debug info:");
         console.log("    - startUpObservations (reset included): "+this.startUpObservations);
         console.log("    - realStartUpObservations (startup only): "+this.realStartUpObservations);
         console.log("    - generatedBeforeLastErrors: "+this.generatedBeforeLastErrors);
         console.log("    - onSamePhaseResets: "+this.onSamePhaseResets);
         console.log("    - onPhaseChangeResets: "+this.onPhaseChangeResets);
+        console.log("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
     }
 
     static _initReturnObject(){
