@@ -37,6 +37,31 @@ class PredictionCalculator{
             return parseInt(median, 10);
         }
     }
+
+    //give value where {part} is smaller than value or equal, 1-{part} is bigger
+    static calculatePartDuration(frequencyDistribution, part){
+        let count = 0;
+        Object.keys(frequencyDistribution).forEach((duration) => {
+            count+=frequencyDistribution[duration];
+        });
+        let runner = 0;
+        let result = undefined;
+        let i = 0;
+        let list = Object.keys(frequencyDistribution);
+        while(result === undefined && i<list.length){
+            if(count*part > runner && count*part <= runner+frequencyDistribution[list[i]]){
+                result = list[i];
+            }
+            runner+=frequencyDistribution[list[i]];
+            i++;
+        }
+        if(count === 0){
+            return undefined;
+        }
+        else {
+            return parseInt(result, 10);
+        }
+    }
 }
 
 module.exports = PredictionCalculator;
