@@ -24,3 +24,23 @@ test('PredictionCalculation: calculateMedianDuration empty distribution', () => 
     let distribution = {};
     expect(PredictionCalculator.calculateMedianDuration(distribution)).toBe(undefined);
 });
+
+test('PredictionCalculation: calculatePartDuration', () => {
+    let distribution = { "10": 5, "20": 10 };
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.2)).toEqual(10);
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.3)).toEqual(10);
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.5)).toEqual(20);
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.7)).toEqual(20);
+});
+
+test('PredictionCalculation: calculatePartDuration same', () => {
+    let distribution = { "10": 5, "20": 5 };
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.2)).toEqual(10);
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.5)).toEqual(10);
+    expect(PredictionCalculator.calculatePartDuration(distribution, 0.8)).toEqual(20);
+});
+
+test('PredictionCalculation: calculatePartDuration empty distribution', () => {
+    let distribution = {};
+    expect(PredictionCalculator.calculatePartDuration(distribution)).toBe(undefined);
+});

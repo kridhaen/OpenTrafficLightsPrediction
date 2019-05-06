@@ -28,18 +28,9 @@ class Analytics{
         if(!this.noEndYet[signalGroup][signalPhase]){
             this.noEndYet[signalGroup][signalPhase] = [];
         }
-        if(!this.noEndYet[signalGroup]){    //bij change is phaseEndDateTime al ingevuld en dus niet nodig, bij same is last = signalPhase en is bovenstaande voldoende
-            this.noEndYet[signalGroup] = {};
-        }
-        if(!this.noEndYet[signalGroup][lastPhase]){
+        if(!this.noEndYet[signalGroup][lastPhase]){ //bij change is phaseEndDateTime al ingevuld en dus niet nodig, bij same is last = signalPhase en is bovenstaande voldoende
             this.noEndYet[signalGroup][lastPhase] = [];
         }
-        // if(!this.phaseEndChecker[signalGroup]){
-        //     this.phaseEndChecker[signalGroup] = {};
-        // }
-        // if(!this.phaseEndChecker[signalGroup][signalPhase]){
-        //     this.phaseEndChecker[signalGroup][signalPhase] = phaseEndDateTime;
-        // }
         let result = {
             "signalGroup": signalGroup,
             "signalPhase": signalPhase,
@@ -82,13 +73,15 @@ class Analytics{
     }
 
     calculate(){
+        let lastSamePhaseDuration = {};
         for(let i = 0; i < this.list.length; i++){
             let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, phaseDuration} = this.list[i];
             let temp = this.list;
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
             let distribution = this.distributionStore.get("fd").get(signalGroup,signalPhase);
+
             //TODO: remove phaseDuration param -> debugging
-            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
+            PredictionManager.predictLikelyTimeBasedOnPrevious(lastSamePhaseDuration[signalGroup][signalPhase], phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution, (likelyTime) => {
                 if(likelyTime !== undefined){
                     temp[i]["phaseLikelyTime"] = likelyTime;
                     let phaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
@@ -98,7 +91,7 @@ class Analytics{
             });
             let distribution2 = this.distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
             //TODO: remove phaseDuration param -> debugging
-            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
+            PredictionManager.predictLikelyTimeBasedOnPrevious(lastSamePhaseDuration[signalGroup][signalPhase], phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution2, (likelyTime) => {
                 if(likelyTime !== undefined){
                     temp[i]["phaseLikelyTimeTFD"] = likelyTime;
                     let phaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
@@ -108,7 +101,7 @@ class Analytics{
             });
             let distribution3 = this.distributionStore.get("tgfd").get(signalGroup,signalPhase,observationUTC["day"]===(0||6) ? 1 : 0,observationUTC["hour"]);
             //TODO: remove phaseDuration param -> debugging
-            PredictionManager.predictLikelyTime(phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
+            PredictionManager.predictLikelyTimeBasedOnPrevious(lastSamePhaseDuration[signalGroup][signalPhase], phaseDuration, signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distribution3, (likelyTime) => {
                 if(likelyTime !== undefined){
                     temp[i]["phaseLikelyTimeTGFD"] = likelyTime;
                     let phaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
