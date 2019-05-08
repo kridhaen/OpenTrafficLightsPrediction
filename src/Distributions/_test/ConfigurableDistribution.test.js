@@ -44,6 +44,20 @@ test('ConfigurableDistribution: add + getDistributions number', () => {
     expect(frequencyDistribution.getDistributions()["group1"]["phase1"][10]).toBe(3);
 });
 
+test('ConfigurableDistribution: calculateDurationMeanOccupancy', () => {
+    let frequencyDistribution = new ConfigurableDistribution(2);
+    frequencyDistribution.add(10, ["group1","phase1"]);
+    frequencyDistribution.add(10, ["group1","phase1"]);
+    frequencyDistribution.add(10, ["group1","phase1"]);
+    expect(frequencyDistribution.calculateDistributionsMeanOccupancy()).toBe(3);
+    frequencyDistribution.add(10, ["group2","phase1"]);
+    frequencyDistribution.add(20, ["group2","phase1"]);
+    frequencyDistribution.add(20, ["group2","phase1"]);
+    frequencyDistribution.add(20, ["group2","phase2"]);
+    frequencyDistribution.add(20, ["group2","phase2"]);
+    expect(frequencyDistribution.calculateDistributionsMeanOccupancy()).toBe(2);
+});
+
 // test('ConfigurableDistribution: createDistributionsCSV', () => {
 //     let frequencyDistribution = new FrequencyDistribution();
 //     frequencyDistribution.add("group1","phase1","10");

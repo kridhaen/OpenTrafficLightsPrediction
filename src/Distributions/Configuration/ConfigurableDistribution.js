@@ -4,12 +4,15 @@ class ConfigurableDistribution{
     constructor(categoryLength){
         this.frequencyDistribution = {};
         this.categoryLength = categoryLength;
+        if(categoryLength === undefined){
+            throw "ConfigurableDistribution: categoryLength undefined";
+        }
     }
 
 
     add(value, categories ){
         if((categories && categories.length < this.categoryLength) || (!categories && this.categoryLength > 0)){
-            throw ("More categories required, required: " + this.categoryLength + " received: " + categories.length);
+            throw ("ConfigurableDistribution: More categories required, required: " + this.categoryLength + " received: " + categories.length);
         }
         if(categories){
             if(Array.isArray(categories)){
@@ -26,7 +29,7 @@ class ConfigurableDistribution{
                 distributionRunner[value]++;
             }
             else {
-                throw ("Categories should be Array");
+                throw ("ConfigurableDistribution: Categories should be Array");
             }
         }
         else{
@@ -46,7 +49,7 @@ class ConfigurableDistribution{
 
     get(categories){
         if((categories && categories.length < this.categoryLength) || (!categories && this.categoryLength > 0)){
-            throw ("More categories required, required: " + this.categoryLength + " received: " + categories.length);
+            throw ("ConfigurableDistribution: More categories required, required: " + this.categoryLength + " received: " + categories.length);
         }
         if(categories){
             if(Array.isArray(categories)){
@@ -63,6 +66,30 @@ class ConfigurableDistribution{
         else{
             return this.frequencyDistribution;
         }
+    }
+
+    calculateDistributionsMeanOccupancy(){
+        let distributions = 0;
+        let observations = 0;
+
+        let calculator = (distribution, depth) => {
+            if(depth === this.categoryLength){
+                Object.keys(distribution).forEach((value) => {
+                    let y = distribution;
+                    distributions++;
+                    observations += distribution[value];
+                });
+            }
+            else{
+                let d = depth+1;
+                Object.keys(distribution).forEach((item) => {
+                    calculator(distribution[item], d);
+                })
+            }
+        };
+
+        calculator(this.frequencyDistribution, 0);
+        return observations/distributions;
     }
 }
 
