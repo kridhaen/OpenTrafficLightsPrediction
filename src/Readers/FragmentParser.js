@@ -112,10 +112,10 @@ class FragmentParser{
                 let error = 0;
                 if (this.lastObservation[signalGroup]) {
                     if (new Date(this.lastObservation[signalGroup]).getTime() > new Date(generatedAtTime).getTime()) {
-                        console.log("last observation bigger than new: " + this.lastObservation[signalGroup] + " - " + generatedAtTime);
+                        console.log("Observation: "+generatedAtTime+" signalGroup: "+signalGroup+" | last observation bigger than new: " + this.lastObservation[signalGroup] + " - " + generatedAtTime);
                         //TODO: hoe kan dit? Duplicate observaties?
                         this.generatedBeforeLastErrors++;
-                        error = 1;
+                        error = 1; //TODO geen comment voor correctheid
                     }
                 }
                 if (!error) {
@@ -134,7 +134,7 @@ class FragmentParser{
 
                         //debug
                         if(generatedAtTime > maxEndTime){
-                            console.log("file contains observation generated after maxEndTime: "+file);
+                            console.log("fragment contains observation generated after maxEndTime: "+file);
                         }
 
                         if (this.phaseStart[signalGroup] !== -1 && this.lastPhase[signalGroup] !== -1) {
