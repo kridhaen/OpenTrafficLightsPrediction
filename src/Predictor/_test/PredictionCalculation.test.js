@@ -1,4 +1,4 @@
-const PredictionCalculator = require("../PredicionCalculator");
+const PredictionCalculator = require("../PredictionCalculator");
 
 test('PredictionCalculation: calculateMeanDuration', () => {
     let distribution = { "10": 5, "20": 10 };
