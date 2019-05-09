@@ -290,12 +290,12 @@ class Analytics{
         for(let i = 0; i < this.list.length; i++){
             returnObject.totalObservations++;
             if(Number.isInteger(this.list[i]["predictedDuration"][distributionName][type]) && Number.isInteger(this.list[i]["phaseDuration"])){
-                let a = this.list[i]["predictedDuration"][distributionName][type] - this.list[i]["phaseDuration"];  //is afgerond
-                let a2 = new Date(this.list[i]["phaseLikelyTime"][distributionName][type]).getTime()/1000 - new Date(this.list[i]["phaseEndDateTime"]).getTime()/1000;  //is niet afgerond
+                //let a = this.list[i]["predictedDuration"][distributionName][type] - this.list[i]["phaseDuration"];  //is afgerond
+                let a = new Date(this.list[i]["phaseLikelyTime"][distributionName][type]).getTime()/1000 - new Date(this.list[i]["phaseEndDateTime"]).getTime()/1000;  //is niet afgerond
                 let rel = new Date(this.list[i]["observationTime"]).getTime()/1000 - new Date(this.list[i]["phaseEndDateTime"]).getTime()/1000;
                 let rel_a = 0;
                 if(rel !== 0){
-                    rel_a = a2/rel;
+                    rel_a = a/rel;
                 }
                  //abs and rel mse and me for everything
                 if (this.list[i]["minEndTime"] === this.list[i]["maxEndTime"]) {
