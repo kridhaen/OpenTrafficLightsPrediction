@@ -37,7 +37,7 @@ test('ConfigurableDistribution: add + get', () => {
 });
 
 test('ConfigurableDistribution: add + getDistributions number', () => {
-    let frequencyDistribution = new ConfigurableDistribution();
+    let frequencyDistribution = new ConfigurableDistribution(2);
     frequencyDistribution.add(10, ["group1","phase1"]);
     frequencyDistribution.add(10, ["group1","phase1"]);
     frequencyDistribution.add(10, ["group1","phase1"]);

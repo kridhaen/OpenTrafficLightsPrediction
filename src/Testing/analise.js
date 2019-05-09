@@ -5,6 +5,7 @@ const RealTimeReader = require('../Readers/RealTimeReader.js');
 const PredictionPublisher = require('../Publisher/PredictionPublisher.js');
 const FragmentParser = require('../Readers/FragmentParser.js');
 const DistributionManager = require('../Distributions/DistributionManager.js');
+const DurationsManager = require('../Distributions/DurationsManager.js');
 const PredictionManager = require('../Predictor/PredictionManager.js');
 const Helper = require('../Readers/Helper.js');
 const Analytics = require('../Analytics/Analytics.js');
@@ -17,8 +18,9 @@ const filepath =  "./previous_small";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
+let durationsManager = new DurationsManager(5);
 
-let analytics = new Analytics(distributionStore);
+let analytics = new Analytics(distributionStore, durationsManager);
 let observations = 0;
 let changes = 0;
 let same = 0;
@@ -38,6 +40,7 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
         analytics.add(undefined, generatedAtTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, generatedAtTime, generatedAtTime, lastPhaseStart); //TODO: uitwerken
+        durationsManager.add(signalGroup, lastPhase, new Date(generatedAtTime).getTime()/1000 - new Date(lastPhaseStart).getTime()/1000);
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
@@ -88,12 +91,13 @@ historicFileSystemReader.readAndParseSync()
 
         //realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
-
+        historicFragmentParser.printDebugInfo();
+        console.log("calculate predictions");
         let analyticsList = analytics.calculate();
         predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
         //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
-
+        console.log("calculate deviations");
         analytics.showLoss();
-        historicFragmentParser.printDebugInfo();
+
 
     });

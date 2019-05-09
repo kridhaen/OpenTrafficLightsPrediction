@@ -1,11 +1,12 @@
 const PredictionCalculator = require('./PredictionCalculator.js');
+const Helper = require('../Readers/Helper.js');
 
 //TODO: als min === max, kan al terug geven voordat moet worden gerekend
 //TODO: remove phaseDuration param -> debugging
 //TODO: confidence -> vb %dat de predictedValue wel degelijk voorkwam tov alle voorkomens (die ook nog kunnen voorkomen, dus in futureDistribution)
 class PredictionManager{
     //simple median value
-    static predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution){
+    static predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, predictionCalculatorFunction){
         try {
             if (distribution && Object.keys(distribution).length > 0) {
                 let result = new Date(phaseStart);
@@ -23,9 +24,11 @@ class PredictionManager{
 
                 //TODO: mean or median -> median better results
                 // let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
-                let predictedDuration = PredictionCalculator.calculateMedianDuration(futureDistribution);
+                // let predictedDuration = PredictionCalculator.calculateMedianDuration(futureDistribution);
                 // let predictedDuration = PredictionCalculator.calculateMostCommonDuration(futureDistribution);
-
+                let predictedDuration = predictionCalculatorFunction(futureDistribution);
+                let distributionSize = Helper.countObservationsInDistribution(distribution);
+                let x = distributionSize;   //TODO: log
                 if(predictedDuration !== undefined){
                     result.setTime(result.getTime() + predictedDuration * 1000);
                     likelyTime = result.toISOString();
