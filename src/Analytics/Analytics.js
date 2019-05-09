@@ -237,8 +237,8 @@ class Analytics{
                 //console.log("error in data @"+durationName+": predicted duration = "+this.list[i][durationName] + " | phaseDuration = "+this.list[i]["phaseDuration"]);
             }
         }
-        mse = mse / (this.list.length-errors);
-        me = me / (this.list.length-errors);
+        mse = mse / (this.list.length-errors-minMaxSame);
+        me = me / (this.list.length-errors-minMaxSame);
         me_without_0 = me_without_0 / me_without_0_counter;
         console.log("-------------------------------------------------------------");
         console.log("total predictions: "+this.list.length);
