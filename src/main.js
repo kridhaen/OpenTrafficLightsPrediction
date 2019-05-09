@@ -40,15 +40,20 @@ historicFileSystemReader.readAndParseSync()
             await realTimeFragmentParser.handleFragment(latest, undefined,
                 (returnObject) => {
                     let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase, phaseStart } = returnObject;
-                    let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);
+                    let observationUTC = Helper.splitDateInParts(phaseStart);
+                    let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);    //TODO: use the better distribution tfd
+                    // let distribution = distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
                     let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, PredictionCalculator.calculateMedianDuration);
+                    !likelyTime ? console.log("no likelyTime") : console.log(likelyTime);
                     likelyTime && store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
                 },
                 (returnObject) => {
                     let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase, phaseStart } = returnObject;
                     let observationUTC = Helper.splitDateInParts(phaseStart);
-                    let distribution = distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
+                    let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);
+                    // let distribution = distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20);
                     let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, PredictionCalculator.calculateMedianDuration);
+                    !likelyTime ? console.log("no likelyTime") : console.log(likelyTime);
                     likelyTime && store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
                 },
                 undefined,
