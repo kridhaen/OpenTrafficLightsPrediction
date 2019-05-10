@@ -77,6 +77,8 @@ class Analytics{
     }
 
     calculate(){
+        console.log("debug info:");
+        console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
         for(let i = 0; i < this.list.length; i++){
             let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, phaseDuration, lastSamePhaseDuration, lastPhaseEndDateTime, lastPhaseStartDateTime} = this.list[i];
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
@@ -286,6 +288,7 @@ class Analytics{
             minMaxSame: 0,
             totalObservations: 0
         };
+        let signalPhases = {};
 
         for(let i = 0; i < this.list.length; i++){
             returnObject.totalObservations++;
@@ -325,6 +328,12 @@ class Analytics{
                     }
 
                     //for each phase separated //TODO: controle
+                    if(!returnObject.abs_me_phased[this.list[i]["signalPhase"]]){
+                        returnObject.abs_me_phased[this.list[i]["signalPhase"]] = 0;
+                    }
+                    if(!returnObject.abs_mse_phased[this.list[i]["signalPhase"]]){
+                        returnObject.abs_mse_phased[this.list[i]["signalPhase"]] = 0;
+                    }
                     if(!returnObject.rel_me_phased[this.list[i]["signalPhase"]]){
                         returnObject.rel_me_phased[this.list[i]["signalPhase"]] = 0;
                     }
@@ -334,9 +343,13 @@ class Analytics{
                     if(!returnObject.abs_rel_me_mse_phased_counter[this.list[i]["signalPhase"]]){
                         returnObject.abs_rel_me_mse_phased_counter[this.list[i]["signalPhase"]] = 0;
                     }
+                    returnObject.abs_me_phased[this.list[i]["signalPhase"]]+= ((a < 0) ? a * -1 : a);
+                    returnObject.abs_mse_phased[this.list[i]["signalPhase"]]+= a*a;
                     returnObject.rel_me_phased[this.list[i]["signalPhase"]]+= ((rel_a < 0) ? rel_a * -1 : rel_a);
                     returnObject.rel_mse_phased[this.list[i]["signalPhase"]]+= rel_a*rel_a;
                     returnObject.abs_rel_me_mse_phased_counter[this.list[i]["signalPhase"]]++;
+
+                    signalPhases[this.list[i]["signalPhase"]] = 0;
                 }
             }
 
@@ -364,13 +377,18 @@ class Analytics{
         returnObject.abs_mse_with_minmax = returnObject.abs_mse_with_minmax / returnObject.abs_rel_me_mse_with_minmax_counter;
         returnObject.rel_mse_with_minmax = returnObject.rel_mse_with_minmax / returnObject.abs_rel_me_mse_with_minmax_counter;
 
+        for(let key of Object.keys(signalPhases)){
+            returnObject.abs_me_phased[key] = returnObject.abs_me_phased[key] / returnObject.abs_rel_me_mse_phased_counter[key];
+            returnObject.abs_mse_phased[key] = returnObject.abs_mse_phased[key] / returnObject.abs_rel_me_mse_phased_counter[key];
+            returnObject.rel_me_phased[key] = returnObject.rel_me_phased[key] / returnObject.abs_rel_me_mse_phased_counter[key];
+            returnObject.rel_mse_phased[key] = returnObject.rel_mse_phased[key] / returnObject.abs_rel_me_mse_phased_counter[key];
+        }
+
         returnObject.success = this.list.length - returnObject.errors;
         return returnObject;
     }
 
     showLoss(){
-        console.log("debug info:");
-        console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
         let deviations = {};
         let distributionNames = ["fd","tfd","tgfd"];
         let types = ["median","mean","mostCommon","samePrevious"];
@@ -383,6 +401,7 @@ class Analytics{
             }
         }
         console.log(deviations);
+        return deviations;
     };
 
 
