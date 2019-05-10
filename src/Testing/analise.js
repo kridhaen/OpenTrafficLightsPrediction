@@ -8,7 +8,7 @@ const DistributionManager = require('../Distributions/DistributionManager.js');
 const DurationsManager = require('../Distributions/DurationsManager.js');
 const PredictionManager = require('../Predictor/PredictionManager.js');
 const Helper = require('../Readers/Helper.js');
-const Analytics = require('../Analytics/Analytics.js');
+const Analytics = require('../Analytics/Result.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
@@ -97,7 +97,8 @@ historicFileSystemReader.readAndParseSync()
         predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
         //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
         console.log("calculate deviations");
-        analytics.showLoss();
+        let deviations = analytics.showLoss();
+        predictionPublisher.setJSONDistributionEndpoint("deviations", deviations);
 
 
     });

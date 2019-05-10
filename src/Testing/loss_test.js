@@ -6,8 +6,9 @@ const PredictionPublisher = require('../Publisher/PredictionPublisher.js');
 const FragmentParser = require('../Readers/FragmentParser.js');
 const DistributionManager = require('../Distributions/DistributionManager.js');
 const PredictionManager = require('../Predictor/PredictionManager.js');
+const DurationsManager = require('../Distributions/DurationsManager.js');
 const Helper = require('../Readers/Helper.js');
-const Analytics = require('../Analytics/Analytics.js');
+const Analytics = require('../Analytics/Result.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
@@ -19,7 +20,9 @@ const learnpath = "./previous_learnset";
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
-let analytics = new Analytics(distributionStore);
+let durationsManager = new DurationsManager(5);
+
+let analytics = new Analytics(distributionStore, durationsManager);
 let observations = 0;
 let changes = 0;
 let same = 0;
@@ -65,6 +68,7 @@ let testHistoricFileSystemReader = new HistoricFileSystemReader(testpath, async 
     await testHistoricFragmentParser.handleFragment(fragment, file, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         analytics.add(undefined, generatedAtTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, generatedAtTime, generatedAtTime, lastPhaseStart); //TODO: uitwerken
+        durationsManager.add(signalGroup, lastPhase, new Date(generatedAtTime).getTime()/1000 - new Date(lastPhaseStart).getTime()/1000);
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
@@ -88,12 +92,13 @@ historicFileSystemReader.readAndParseSync()
 
         testHistoricFileSystemReader.readAndParseSync().then(() => {
             console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
-
+            console.log("calculate predictions");
             let analyticsList = analytics.calculate();
             predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
             //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
-
-            analytics.showLoss();
+            console.log("calculate deviations");
+            let deviations = analytics.showLoss();
+            predictionPublisher.setJSONDistributionEndpoint("deviations", deviations);
             historicFragmentParser.printDebugInfo();
             testHistoricFragmentParser.printDebugInfo();
         });
