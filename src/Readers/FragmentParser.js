@@ -156,8 +156,9 @@ class FragmentParser{
                                 //nog 1 ms extra rekenen
                                 //soms ook net wat langer (2 - 5 ms)
                                 //bij min hoeft niet worden aangepast, want komt zelden voor (anders ook +205 bij lastMinEndTime)
-                                if((this.lastMaxEndTime[signalGroup] !== -1 && new Date(generatedAtTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+210)
-                                    || (this.lastMinEndTime[signalGroup] !== -1 && generatedAtTime < this.lastMinEndTime[signalGroup])
+                                if( generatedAtTime !== this.lastObservation[signalGroup] &&
+                                    ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(generatedAtTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+210)
+                                    || (this.lastMinEndTime[signalGroup] !== -1 && generatedAtTime < this.lastMinEndTime[signalGroup]))
                                 ){
                                     //phase can't end after maxEndTime and before minEndTime, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
@@ -188,8 +189,13 @@ class FragmentParser{
                                 //same phase
 
                                 //lodi.ilabt.imec.be onnauwkeurige data -> soms meerdere observaties max verhoogt
-                                if ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+1005)
-                                    || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime()+1005 < new Date(this.lastMinEndTime[signalGroup]).getTime())
+                                //als observatie op zelfde moment is gemaakt, kan die eens met en grotere maxEndTime worden ingelezen, als die dan eerst wordt verwerkt is de voorwaarde
+                                //niet meer voldaan en is er mogelijks een gat, terwijl dit niet echt kan, want op hetzelfde moment aangemaakt
+                                //als zelfde generatedAtTime als vorige -> niet controleren op gat
+                                //(zou ook gewoon kunnen sorteren op max en min etc, maar meer computationeel werk)
+                                if ( generatedAtTime !== this.lastObservation[signalGroup] &&
+                                    ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+105)
+                                    || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime()+105 < new Date(this.lastMinEndTime[signalGroup]).getTime()))
                                 ) {
                                     //maxEndTime can not increase for same phase, minEndTime can not decrease, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
