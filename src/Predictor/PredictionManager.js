@@ -22,10 +22,6 @@ class PredictionManager{
                 //if futureDistribution = empty -> predictedDuration = undefined
                 let likelyTime = undefined;
 
-                //TODO: mean or median -> median better results
-                // let predictedDuration = PredictionCalculator.calculateMeanDuration(futureDistribution);
-                // let predictedDuration = PredictionCalculator.calculateMedianDuration(futureDistribution);
-                // let predictedDuration = PredictionCalculator.calculateMostCommonDuration(futureDistribution);
                 let predictedDuration = predictionCalculatorFunction(futureDistribution);
                 let distributionSize = Helper.countObservationsInDistribution(distribution);
                 let x = distributionSize;   //TODO: log
