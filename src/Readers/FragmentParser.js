@@ -17,6 +17,7 @@ class FragmentParser{
         this.generatedBeforeLastErrors = 0; //count if generatedAtTime > last observation generatedAtTime
         this.onSamePhaseResets = 0; //count samePhase resets
         this.onPhaseChangeResets = 0;   //count phaseChange resets
+        this.observationSameAsLast = 0; //count when generatedAtTime is same as last observed generatedAtTime
 
         this.realStartUpObservations = 0;   //count observations needed for startup
         this.realStartUp = {};  //is true if startup completed
@@ -28,6 +29,7 @@ class FragmentParser{
         console.log("    - startUpObservations (reset included): "+this.startUpObservations);
         console.log("    - realStartUpObservations (startup only): "+this.realStartUpObservations);
         console.log("    - generatedBeforeLastErrors: "+this.generatedBeforeLastErrors);
+        console.log("    - observationSameAsLast: "+this.observationSameAsLast);
         console.log("    - onSamePhaseResets: "+this.onSamePhaseResets);
         console.log("    - onPhaseChangeResets: "+this.onPhaseChangeResets);
         console.log("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
@@ -66,7 +68,7 @@ class FragmentParser{
     };
 
     //TODO: remove file param -> debugging
-    async handleFragment(fragment, file, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle, onFragmentError){
+    async handleFragment(fragment, file, onPhaseChange, onSamePhase, beforePhaseChangeCheck, afterHandle, onFragmentError, checkForGeneratedAtTime){
         let returnObject = FragmentParser._initReturnObject();
         let { store, prefixes } = await Helper.parseAndStoreQuads(fragment);
 
@@ -94,6 +96,26 @@ class FragmentParser{
             }
         });
 
+        //als de eerste observatie in een fragment niet overeenkomt met zijn naam, als die een bestandsnaam heeft, dan is het fragment in de historicfilesystemreader ingelezen niet geldig,
+        //want dan kan de chronologische ordening volgens bestandsnaam niet worden gegarandeerd.
+        let firstObservationName;
+        if(file){
+            let firstObservation = await store.getQuads(null, namedNode('http://www.w3.org/ns/prov#generatedAtTime'), null).sort(function(a, b) {
+                    a = new Date(a.object.value).getTime();
+                    b = new Date(b.object.value).getTime();
+
+                    return a<b ? -1 : a>b ? 1 : 0;
+                }
+            )[0];
+            if(!firstObservation){
+                return;
+            }
+            firstObservationName = "fragment_" + (firstObservation.object.value).replace(/\:/g,"_").replace(/\./g,"_") + ".trig";
+            if( firstObservationName !== file){
+                console.log("\x1b[31m","Filename is not correct: "+file + ", first observation: "+firstObservationName,"\x1b[0m");
+                return;
+            }
+        }
         //overlopen van alle observaties in een fragment, gesorteerd met oudste eerst
         await store.getQuads(null, namedNode('http://www.w3.org/ns/prov#generatedAtTime'), null).sort(function(a, b) {
                 a = new Date(a.object.value).getTime();
@@ -112,15 +134,19 @@ class FragmentParser{
                 let error = 0;
                 if (this.lastObservation[signalGroup]) {
                     if (new Date(this.lastObservation[signalGroup]).getTime() > new Date(generatedAtTime).getTime()) {
-                        console.log("Observation: "+generatedAtTime+" signalGroup: "+signalGroup+" | last observation bigger than new: " + this.lastObservation[signalGroup] + " - " + generatedAtTime);
-                        //TODO: hoe kan dit? Duplicate observaties?
+                        console.log(file+" : Observation: "+generatedAtTime+" signalGroup: "+signalGroup+" | last observation bigger than new: " + this.lastObservation[signalGroup] + " - " + generatedAtTime);
                         this.generatedBeforeLastErrors++;
-                        error = 1; //TODO geen comment voor correctheid
+                        error = 1;
+                    }
+
+                    //latest fragments can contain the same observation, previous fragments should not contain duplicate
+                    //no code breaking bug, but can be nice to know -> logged
+                    if(generatedAtTime === this.lastObservation[signalGroup]){
+                        console.log("generatedAtTime "+generatedAtTime+" is same as last "+this.lastObservation[signalGroup]+" sg: "+signalGroup);
+                        this.observationSameAsLast++;
                     }
                 }
                 if (!error) {
-                    this.lastObservation[signalGroup] = generatedAtTime;
-
                     let signalState = store.getQuads(namedNode(signalGroup), namedNode('https://w3id.org/opentrafficlights#signalState'), null, observation.subject)[0]; //zit altijd 1 of geen in, als de signalstate is aangepast op generatedAtTime voor de opgegeven signalgroup
                     if (signalState) {
                         let minEndTime = store.getQuads(signalState.object, namedNode('https://w3id.org/opentrafficlights#minEndTime'), null, observation.subject)[0].object.value;
@@ -194,8 +220,8 @@ class FragmentParser{
                                 //als zelfde generatedAtTime als vorige -> niet controleren op gat
                                 //(zou ook gewoon kunnen sorteren op max en min etc, maar meer computationeel werk)
                                 if ( generatedAtTime !== this.lastObservation[signalGroup] &&
-                                    ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+105)
-                                    || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime()+105 < new Date(this.lastMinEndTime[signalGroup]).getTime()))
+                                    ((this.lastMaxEndTime[signalGroup] !== -1 && new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime()+1005)
+                                    || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime()+1005 < new Date(this.lastMinEndTime[signalGroup]).getTime()))
                                 ) {
                                     //maxEndTime can not increase for same phase, minEndTime can not decrease, if this is the case, it is not the same phase or an error occurred in the data
                                     this.lastPhase[signalGroup] = -1;   //reset
@@ -234,6 +260,8 @@ class FragmentParser{
                         }
                         // this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
                         // this.lastMinEndTime[signalGroup] = minEndTime; //minimale eindtijd laatste fragment
+
+                        this.lastObservation[signalGroup] = generatedAtTime;
                     }
                 }
             });
