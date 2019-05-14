@@ -9,7 +9,7 @@ class RealTimeReader{
 
     async handleLatest(latest){
         console.log("comparing");
-        //console.log(latest);
+        //console.log(latest); //TODO: parse only changed fragments
         if(this.lastLatest){
             // if(latest.length != this.lastLatest.length){    //different latest
                 this.lastLatest = latest;
