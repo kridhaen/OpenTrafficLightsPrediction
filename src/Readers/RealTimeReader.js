@@ -11,15 +11,15 @@ class RealTimeReader{
         console.log("comparing");
         //console.log(latest);
         if(this.lastLatest){
-            if(latest.length != this.lastLatest.length){    //different latest
+            // if(latest.length != this.lastLatest.length){    //different latest
                 this.lastLatest = latest;
                 console.log("\x1b[36m","different latest","\x1b[0m");
                 await this.onLatest(latest);
-                console.log("\x1b[36m","latest handling complete","\x1b[0m")
-            }
-            else{
-                console.log("\x1b[36m","no changes latest","\x1b[0m");
-            }
+                console.log("\x1b[36m","latest handling complete","\x1b[0m");
+        //     }
+        //     else{
+        //         console.log("\x1b[36m","no changes latest","\x1b[0m");
+        //     }
         }
         else {
             this.lastLatest = latest;
