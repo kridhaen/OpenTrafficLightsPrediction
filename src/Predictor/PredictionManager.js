@@ -15,7 +15,7 @@ class PredictionManager{
                 let elapsedDuration = (observationTime.getTime() - result.getTime()) / 1000;
                 let futureDistribution = {};
                 Object.keys(distribution).forEach((key) => {    //calculate mean only over future durations, not past
-                    if (key > elapsedDuration) {  //TODO: should > or >= ?
+                    if (key >= elapsedDuration) {  //TODO: should > or >= ?
                         futureDistribution[key] = distribution[key];
                     }
                 });
@@ -23,18 +23,24 @@ class PredictionManager{
                 let likelyTime = undefined;
 
                 let predictedDuration = predictionCalculatorFunction(futureDistribution);
+                // if(signalGroup === "https://opentrafficlights.org/id/signalgroup/K648/4" && signalPhase === "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
+                //     console.log(futureDistribution);
+                //     console.log(distribution);
+                //     console.log(phaseStart);
+                //     console.log(generatedAtTime);
+                // }
                 let distributionSize = Helper.countObservationsInDistribution(distribution);
                 let x = distributionSize;   //TODO: log
                 if(predictedDuration !== undefined){
                     result.setTime(result.getTime() + predictedDuration * 1000);
                     likelyTime = result.toISOString();
                 }
-                if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //TODO: min en max niet precies -> duration komt soms niet helemaal overeen (zie hieronder) -> voorspelling zit afwijking op!!!
+                if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //TODO: predict longer than max
                     likelyTime = minEndTime;
                 } else if (likelyTime!== undefined && likelyTime < minEndTime) {
                     likelyTime = minEndTime;
-                } else if (likelyTime !== undefined && likelyTime > maxEndTime) {
-                    likelyTime = maxEndTime;
+                // } else if (likelyTime !== undefined && new Date(likelyTime).getTime() > new Date(maxEndTime).getTime()+210 && new Date(likelyTime).getTime() < new Date(maxEndTime).getTime() + 5000 ) {
+                //     likelyTime = maxEndTime;
                 }
                 //TODO: als geen prediction meer mogelijk, maar alle historische waarden liggen onder minEndTime -> minEndTime als prediction (en omgekeerd voor max)?
                 // if(likelyTime === undefined){
@@ -48,26 +54,25 @@ class PredictionManager{
     }
 
     //next is same as previous
-    static predictLikelyTimeSamePrevious(lastPhaseDuration, signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution){
+    static predictLikelyTimeSamePrevious(lastPhaseDuration, signalGroup, signalPhase, minEndTime, maxEndTime, phaseStart){
         try {
-            if (distribution && Object.keys(distribution).length > 0) {
-                let result = new Date(phaseStart);
-                let likelyTime = undefined;
-                let predictedDuration = lastPhaseDuration;
-                if(predictedDuration !== undefined){
-                    result.setTime(result.getTime() + predictedDuration * 1000);
-                    likelyTime = result.toISOString();
-                }
-                if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //TODO: min en max niet precies -> duration komt soms niet helemaal overeen (zie hieronder) -> voorspelling zit afwijking op!!!
-                    likelyTime = minEndTime;
-                } else if (likelyTime!== undefined && likelyTime < minEndTime) {
-                    likelyTime = minEndTime;
-                } else if (likelyTime !== undefined && likelyTime > maxEndTime) {
-                    likelyTime = maxEndTime;
-                }
-                //TODO: als geen prediction meer mogelijk, maar alle historische waarden liggen onder minEndTime -> minEndTime als prediction (en omgekeerd voor max)?
-                return likelyTime;   //TODO: undefined likelyTime if prediction not possible
+            let result = new Date(phaseStart);
+            let likelyTime = undefined;
+            let predictedDuration = lastPhaseDuration;
+            if(predictedDuration !== undefined){
+                result.setTime(result.getTime() + predictedDuration * 1000);
+                likelyTime = result.toISOString();
             }
+            if (minEndTime && maxEndTime && minEndTime === maxEndTime) { //TODO: min en max niet precies -> duration komt soms niet helemaal overeen (zie hieronder) -> voorspelling zit afwijking op!!!
+                likelyTime = minEndTime;
+            } else if (likelyTime!== undefined && likelyTime < minEndTime) {
+                likelyTime = minEndTime;
+            } else if (likelyTime !== undefined && likelyTime > maxEndTime) {
+                likelyTime = maxEndTime;
+            }
+            //TODO: als geen prediction meer mogelijk, maar alle historische waarden liggen onder minEndTime -> minEndTime als prediction (en omgekeerd voor max)?
+            return likelyTime;   //TODO: undefined likelyTime if prediction not possible
+
         } catch (e) {
             //console.log(e);
         }
