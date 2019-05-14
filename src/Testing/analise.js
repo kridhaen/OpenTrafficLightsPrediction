@@ -18,7 +18,7 @@ const filepath =  "./previous_small";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
-let durationsManager = new DurationsManager(5);
+let durationsManager = new DurationsManager(1);
 
 let analytics = new Analytics(distributionStore, durationsManager);
 let observations = 0;
