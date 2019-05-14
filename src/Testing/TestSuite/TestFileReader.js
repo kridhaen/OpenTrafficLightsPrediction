@@ -29,7 +29,7 @@ class HistoricFileSystemReader{
                 console.log("\x1b[31m", "total files in dir: "+files.length, "\x1b[0m");
                 for(let testRun = 0; testRun < temp.dataParts; testRun++){
                     console.log("\x1b[31m", "starting run: " + testRun, "\x1b[0m");
-                    temp.onBeforeRun();
+                    await temp.onBeforeRun();
                     testPartStart = testRun * filesPerPart;
                     testPartEnd = testPartStart + filesPerPart;
 

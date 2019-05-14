@@ -7,7 +7,11 @@ const DurationsManager = require('../../Distributions/DurationsManager.js');
 const Analytics = require('../../Analytics/Result.js');
 
 //const filepath = "./previous";
-const filepath =  "./previous_small";
+const filepath =  "./previous";
+
+let testRuns = 10;
+let runCounter = 0;
+let results = [];
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
@@ -52,18 +56,27 @@ let historicFileSystemReader = new TestFileReader(filepath, 10, async (fragment,
 }, () => {
     historicFragmentParser = new FragmentParser();
     testHistoricFragmentParser = new FragmentParser();
+    distributionStore = new DistributionStore();
+    DistributionManager.createDistributions(distributionStore);
+    durationsManager = new DurationsManager(1);
+    analytics = new Analytics(distributionStore, durationsManager);
 }, () => {
+    analytics.calculate();
+    results[runCounter] = analytics.showLoss();
+    runCounter++;
+    // distributionStore = new DistributionStore();
+    // DistributionManager.createDistributions(distributionStore);
+    // durationsManager = new DurationsManager(1);
+    // analytics = new Analytics(distributionStore, durationsManager);
 
 }, () => {
-
+    predictionPublisher.setJSONDistributionEndpoint("result", results);
 });
 
 let predictionPublisher = new PredictionPublisher(8080);
 predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
     .then(() => {
-        let b = process.hrtime(a);
-        console.log(b);
 
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
         historicFragmentParser.printDebugInfo();
