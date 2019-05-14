@@ -79,6 +79,7 @@ class Analytics{
     calculate(){
         console.log("debug info:");
         console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
+        console.log(" -> list length: "+this.list.length);
         for(let i = 0; i < this.list.length; i++){
             let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, phaseDuration, lastSamePhaseDuration, lastPhaseEndDateTime, lastPhaseStartDateTime} = this.list[i];
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
@@ -127,7 +128,7 @@ class Analytics{
             }
             //samePrevious
             for(let j = 0; j < distributionNames.length; j++){
-                let likelyTime = PredictionManager.predictLikelyTimeSamePrevious(lastSamePhaseDuration,signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distributions[j]);
+                let likelyTime = PredictionManager.predictLikelyTimeSamePrevious(lastSamePhaseDuration,signalGroup, signalPhase,  minEndTime, maxEndTime, phaseStartDateTime);
                 if(likelyTime !== undefined){
                     this.list[i]["phaseLikelyTime"][distributionNames[j]]["samePrevious"] = likelyTime;
                     let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
@@ -254,6 +255,7 @@ class Analytics{
     }
 
     _calculateLoss(distributionName, type){
+        console.log("calculate loss started");
         let returnObject = {
             abs_me: 0,
             abs_mse: 0,
@@ -389,6 +391,7 @@ class Analytics{
     }
 
     showLoss(){
+        console.log("showLoss started");
         let deviations = {};
         let distributionNames = ["fd","tfd","tgfd"];
         let types = ["median","mean","mostCommon","samePrevious"];
@@ -397,6 +400,7 @@ class Analytics{
                 deviations[distributionNames[j]] = {};
             }
             for(let k = 0; k < types.length; k++){
+                console.log("calculating for: "+distributionNames[j] + " " + types[k]);
                 deviations[distributionNames[j]][types[k]] = this._calculateLoss(distributionNames[j], types[k]);
             }
         }
