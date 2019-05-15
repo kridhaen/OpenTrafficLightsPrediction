@@ -10,9 +10,8 @@ let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
 
 
-let historicFragmentParser = new FragmentParser();  //TODO: remove file?
+let historicFragmentParser = new FragmentParser();
 let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment, file) => {
-    //TODO: remove file param -> debugging
     await historicFragmentParser.handleFragment(fragment, file, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
