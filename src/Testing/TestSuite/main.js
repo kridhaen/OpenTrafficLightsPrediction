@@ -25,7 +25,7 @@ let clearNoEndYet = 0;
 
 let historicFragmentParser = new FragmentParser();  //TODO: remove file?
 let testHistoricFragmentParser = new FragmentParser();
-let historicFileSystemReader = new TestFileReader(filepath, 10, async (fragment, file) => {
+let historicFileSystemReader = new TestFileReader(filepath, testRuns, async (fragment, file) => {
 
     await historicFragmentParser.handleFragment(fragment, file, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
