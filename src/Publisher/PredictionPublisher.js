@@ -9,6 +9,7 @@ class PredictionPublisher{
         this.app.get('/', (req, res) => res.send("OpenTrafficLightsPrediction server running!"));
         this.server = undefined;
         this.latestData = undefined;
+        this.app.enable('etag');
     }
 
     setLatestEndpoint(data){
