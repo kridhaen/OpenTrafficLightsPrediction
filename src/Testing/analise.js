@@ -18,7 +18,7 @@ const filepath =  "./previous_small";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
-let durationsManager = new DurationsManager(1);
+let durationsManager = new DurationsManager(70);
 
 let analytics = new Analytics(distributionStore, durationsManager);
 let observations = 0;
@@ -73,23 +73,6 @@ historicFileSystemReader.readAndParseSync()
         predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
         predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
 
-        // let realTimeReader = new RealTimeReader(datasetUrl, async (latest) => {
-        //     await realTimeFragmentParser.handleFragment(latest, undefined, undefined,
-        //         (returnObject) => {
-        //             let { signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, lastPhaseStart, lastPhase } = returnObject;
-        //             let distribution = distributionStore.get("fd").get(signalGroup,signalPhase);
-        //             PredictionManager.predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, lastPhaseStart, distribution, (likelyTime) => {
-        //                 store.addQuad(signalState.object, namedNode('https://w3id.org/opentrafficlights#likelyTime'), literal(likelyTime,namedNode("http://www.w3.org/2001/XMLSchema#date")), observation.subject);
-        //             })
-        //         },
-        //         async (returnObject) => {
-        //             let { store, prefixes } = returnObject;
-        //             await Helper.writeN3Store(store, prefixes).then((result) => {predictionPublisher.setLatestEndpoint(result)});
-        //         }
-        //     );
-        // });
-
-        //realTimeReader.getLatestCyclic(1000); //TODO: uncomment + bugfix last observation bigger than new and invalid time value for predictlikelytime
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
         historicFragmentParser.printDebugInfo();
         console.log("calculate predictions");

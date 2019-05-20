@@ -22,8 +22,16 @@ class DurationsManager {
         if(this.durations[signalGroup]
             && this.durations[signalGroup][signalPhase]
         ){
-            return this.durations[signalGroup][signalPhase];
+            return this.durations[signalGroup][signalPhase].length >= this.historySize ? this.returnLastX(70, this.durations[signalGroup][signalPhase]) : undefined;
         }
+    }
+
+    returnLastX(x, array){
+        let result = [];
+        for(let i = array.length-x; i < array.length; i++){
+            result.push(array[i]);
+        }
+        return result;
     }
 
     getLastDuration(signalGroup, signalPhase){

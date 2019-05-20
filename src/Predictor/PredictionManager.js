@@ -23,14 +23,8 @@ class PredictionManager{
                 let likelyTime = undefined;
 
                 let predictedDuration = predictionCalculatorFunction(futureDistribution);
-                // if(signalGroup === "https://opentrafficlights.org/id/signalgroup/K648/4" && signalPhase === "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
-                //     console.log(futureDistribution);
-                //     console.log(distribution);
-                //     console.log(phaseStart);
-                //     console.log(generatedAtTime);
-                // }
-                let distributionSize = Helper.countObservationsInDistribution(distribution);
-                let x = distributionSize;   //TODO: log
+                // let distributionSize = Helper.countObservationsInDistribution(distribution);
+                // console.log("size: "+distributionSize);   //TODO: log
                 if(predictedDuration !== undefined){
                     result.setTime(result.getTime() + predictedDuration * 1000);
                     likelyTime = result.toISOString();
@@ -45,6 +39,17 @@ class PredictionManager{
                 //TODO: als geen prediction meer mogelijk, maar alle historische waarden liggen onder minEndTime -> minEndTime als prediction (en omgekeerd voor max)?
                 // if(likelyTime === undefined){
                 //     likelyTime = minEndTime;
+                // }
+
+                // if(signalGroup === "https://opentrafficlights.org/id/signalgroup/K648/4" && signalPhase === "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
+                //     console.log("----------------------------------------------------");
+                //     console.log(futureDistribution);
+                //     console.log(distribution);
+                //     console.log("phaseStart: "+phaseStart);
+                //     console.log("generatedAtTime: "+generatedAtTime);
+                //     console.log("likelyTime: "+likelyTime);
+                //     console.log(predictedDuration);
+                //     console.log((new Date(likelyTime).getTime()-new Date(generatedAtTime).getTime())/1000);
                 // }
                 return likelyTime;   //TODO: undefined likelyTime if prediction not possible
             }
