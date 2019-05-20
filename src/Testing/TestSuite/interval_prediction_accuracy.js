@@ -3,8 +3,9 @@ const HistoricFileSystemReader = require('../../Readers/HistoricFileSystemReader
 const PredictionPublisher = require('../../Publisher/PredictionPublisher.js');
 const FragmentParser = require('../../Readers/FragmentParser.js');
 const DistributionManager = require('../../Distributions/DistributionManager.js');
+const PredictionCalculator = require('../../Predictor/PredictionCalculator.js');
 
-const filepath =  "./previous_small";
+const filepath =  "./previous";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
@@ -24,8 +25,6 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
 
 });
 
-let realTimeFragmentParser = new FragmentParser();
-
 // Returns if a value is an object
 function isObject (value) {
     return value && typeof value === 'object' && value.constructor === Object;
@@ -44,9 +43,10 @@ let calculateDistributionsMinMax = (dist) => {
             distributions++;
             let min = undefined;
             let max = undefined;
-            Object.keys(distribution).forEach((value) => {
+            Object.keys(distribution).forEach((key) => {
                 // let y = distribution;
                 // observations += distribution[value];
+                let value = Number.parseInt(key, 10);
                 if(value < min || min === undefined){
                     min = value;
                 }
@@ -58,7 +58,68 @@ let calculateDistributionsMinMax = (dist) => {
         }
         else{
             Object.keys(distribution).forEach((item) => {
-                calculator(distribution[item]);
+                if(item !== "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
+                    calculator(distribution[item]);
+                }
+            });
+        }
+    };
+
+    calculator(dist);
+    return percentages/distributions;
+};
+
+let calculateDistributionsInterval = (dist, part) => {
+    let distributions = 0;
+    let percentages = 0;
+
+    let calculator = (distribution) => {
+        if(isObject(distribution) && isNumber(distribution[Object.keys(distribution)[0]]) ){
+            distributions++;
+            let min = undefined;
+            let max = undefined;
+            Object.keys(distribution).forEach((key) => {
+                // let y = distribution;
+                // observations += distribution[value];
+                let value = Number.parseInt(key, 10);
+                if(value < min || min === undefined){
+                    min = value;
+                }
+                if(value > max || max === undefined){
+                    max = value;
+                }
+            });
+            // let count = 0;
+            // Object.keys(distribution).forEach((duration) => {
+            //     count+=distribution[duration];
+            // });
+            // let runner = 0;
+            // let result = undefined;
+            // let i = 0;
+            // let list = Object.keys(distribution);
+            // while(result === undefined && i<list.length){
+            //     if(count*part > runner && count*part <= runner+distribution[list[i]]){
+            //         result = list[i];
+            //     }
+            //     runner+=distribution[list[i]];
+            //     i++;
+            // }
+            let result = PredictionCalculator.calculatePartDuration(distribution, part);
+            if(result !== undefined){
+                min = Number.parseInt(result, 10);
+            }
+            result = PredictionCalculator.calculatePartDuration(distribution, 1-part);
+            if(result !== undefined){
+                max = Number.parseInt(result, 10);
+            }
+
+            percentages += (min / max) * 100;
+        }
+        else{
+            Object.keys(distribution).forEach((item) => {
+                if(item !== "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
+                    calculator(distribution[item]);
+                }
             });
         }
     };
@@ -71,7 +132,30 @@ let predictionPublisher = new PredictionPublisher(8080);
 predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
     .then(() => {
+        predictionPublisher.setJSONDistributionEndpoint("distribution/fd", distributionStore.get("fd").getDistributions());
+        predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
+        predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
         console.log("fd: "+calculateDistributionsMinMax(distributionStore.get("fd").getDistributions()));
         console.log("tfd: "+calculateDistributionsMinMax(distributionStore.get("tfd").getDistributions()));
-        console.log("tfgd: "+calculateDistributionsMinMax(distributionStore.get("tgfd").getDistributions()));
+        console.log("tgfd: "+calculateDistributionsMinMax(distributionStore.get("tgfd").getDistributions()));
+        console.log(" ");
+        console.log("1%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.01));
+        console.log("1%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.01));
+        console.log("1%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.01));
+        console.log(" ");
+        console.log("5%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.05));
+        console.log("5%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.05));
+        console.log("5%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.05));
+        console.log(" ");
+        console.log("10%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.1));
+        console.log("10%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.1));
+        console.log("10%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.1));
+        console.log(" ");
+        console.log("15%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.15));
+        console.log("15%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.15));
+        console.log("15%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.15));
+        console.log(" ");
+        console.log("20%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.2));
+        console.log("20%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.2));
+        console.log("20%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.2));
     });
