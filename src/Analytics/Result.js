@@ -136,7 +136,7 @@ class Analytics{
                     this.list[i]["predictedDuration"][distributionNames[j]]["samePrevious"] = predictedPhaseDuration;
                 }
             }
-            //spicy hmmm -> vorige fase duurde langer dan verwacht -> nu ook langer dan verwacht voorspellen
+            //vorige fase duurde langer dan verwacht -> nu ook langer dan verwacht voorspellen
             // for(let j = 0; j < distributionNames.length; j++){
             //     let lastPhaseDuration = new Date(lastPhaseEndDateTime).getTime()/1000 - new Date(lastPhaseStartDateTime).getTime()/1000;
             //     let lastPhaseMedian = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distributions[j], (dist) => {PredictionCalculator.calculateMedianDuration(dist)});
