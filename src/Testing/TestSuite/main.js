@@ -81,11 +81,52 @@ historicFileSystemReader.readAndParseSync()
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
         historicFragmentParser.printDebugInfo();
         console.log("calculate predictions");
-        let analyticsList = analytics.calculate();
-        predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
-        console.log("calculate deviations");
-        let deviations = analytics.showLoss();
-        predictionPublisher.setJSONDistributionEndpoint("deviations", deviations);
+        // let analyticsList = analytics.calculate();
+        // predictionPublisher.setJSONDistributionEndpoint("analytics", analyticsList);
+        // console.log("calculate deviations");
+        // let deviations = analytics.showLoss();
+        // predictionPublisher.setJSONDistributionEndpoint("deviations", deviations);
+
+        let res = {};
+        for(let run of results){
+            Object.keys(run).forEach((dist) => {
+                if(!res[dist]){
+                    res[dist] = {};
+                }
+                Object.keys(run[dist]).forEach((calc) => {
+                    if(!res[dist][calc]){
+                        res[dist][calc] = {};
+                    }
+                    if(!res[dist][calc].abs_me){
+                        res[dist][calc].abs_me = 0;
+                    }
+                    if(!res[dist][calc].abs_mse){
+                        res[dist][calc].abs_mse = 0;
+                    }
+                    if(!res[dist][calc].rel_me){
+                        res[dist][calc].rel_me = 0;
+                    }
+                    if(!res[dist][calc].abs_rel_me_mse_counter){
+                        res[dist][calc].abs_rel_me_mse_counter = 0;
+                    }
+                    res[dist][calc].abs_me += run[dist][calc].abs_me;
+                    res[dist][calc].abs_mse += run[dist][calc].abs_mse;
+                    res[dist][calc].rel_me += run[dist][calc].rel_me;
+                    res[dist][calc].abs_rel_me_mse_counter += run[dist][calc].abs_rel_me_mse_counter;
+                });
+            });
+        }
+
+        Object.keys(res).forEach((dist) => {
+            Object.keys(res[dist]).forEach((calc) => {
+                res[dist][calc].abs_me = res[dist][calc].abs_me / 10;
+                res[dist][calc].abs_mse = res[dist][calc].abs_mse / 10;
+                res[dist][calc].rel_me = res[dist][calc].rel_me / 10 ;
+            });
+        });
+
+        console.log(res);
+        predictionPublisher.setJSONDistributionEndpoint("totalRunResults", res);
 
 
     });
