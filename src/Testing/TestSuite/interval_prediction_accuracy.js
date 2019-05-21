@@ -104,16 +104,15 @@ let calculateDistributionsInterval = (dist, part) => {
             //     runner+=distribution[list[i]];
             //     i++;
             // }
-            let result = PredictionCalculator.calculatePartDuration(distribution, part);
-            if(result !== undefined){
-                min = Number.parseInt(result, 10);
-            }
-            result = PredictionCalculator.calculatePartDuration(distribution, 1-part);
-            if(result !== undefined){
-                max = Number.parseInt(result, 10);
-            }
+            // if(result !== undefined){
+            //     min = Number.parseInt(result, 10);
+            // }
+            min = PredictionCalculator.calculatePartDuration(distribution, part);
+            max = PredictionCalculator.calculatePartDuration(distribution, 1-part);
+            let mean = PredictionCalculator.calculateMeanDuration(distribution);
+            let median = PredictionCalculator.calculateMedianDuration(distribution);
 
-            percentages += (min / max) * 100;
+            percentages += (min / median) * 100;
         }
         else{
             Object.keys(distribution).forEach((item) => {
