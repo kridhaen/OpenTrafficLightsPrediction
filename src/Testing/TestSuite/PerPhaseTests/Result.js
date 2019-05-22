@@ -41,11 +41,11 @@ class Analytics{
             "id": this.idGen,
             "signalGroup": signalGroup,
             "signalPhase": signalPhase,
-            "lastPhase": lastPhase,
+            // "lastPhase": lastPhase,
             "phaseEndDateTime": phaseEndDateTime,
             "phaseStartDateTime": phaseStartDateTime,
-            "lastPhaseEndDateTime": lastPhaseEndDateTime,
-            "lastPhaseStartDateTime": lastPhaseStartDateTime,
+            // "lastPhaseEndDateTime": lastPhaseEndDateTime,
+            // "lastPhaseStartDateTime": lastPhaseStartDateTime,
             "minEndTime": minEndTime,
             "maxEndTime": maxEndTime,
             "observationTime": observationTime,
@@ -81,7 +81,7 @@ class Analytics{
         //console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
         //console.log(" -> list length: "+list.length);
         for(let i = 0; i < list.length; i++){
-            let { phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, phaseDuration, lastSamePhaseDuration, lastPhaseEndDateTime, lastPhaseStartDateTime} = list[i];
+            let { phaseStartDateTime, signalGroup, signalPhase, minEndTime, maxEndTime, observationTime} = list[i];
             let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
             let distributions = [
                 this.distributionStore.get("fd").get(signalGroup,signalPhase),
@@ -232,6 +232,7 @@ class Analytics{
     }
 
     executeTestSuite(){
+        console.log("start testsuite execution");
         // let grouped = this.transformListToGroupedList();
         // dan voor iedere in grouped
         let newList = [];
@@ -241,7 +242,7 @@ class Analytics{
             }
         }
         this.list = newList;
-        this.testOnObservations(this.list, 20);
+        this.testOnObservations(this.list, 10);
 
         // let counter = 0;
         // let gevonden = undefined;
@@ -253,6 +254,7 @@ class Analytics{
         //     counter++;
         // }
         // return gevonden;
+        console.log("execution done");
         return this.parseResultsAfterExecution(this.list);
         //return this.list;
     }

@@ -39,7 +39,7 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         //DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
         analytics.add(undefined, generatedAtTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, generatedAtTime, generatedAtTime, lastPhaseStart); //TODO: uitwerken
-        durationsManager.add(signalGroup, lastPhase, new Date(generatedAtTime).getTime()/1000 - new Date(lastPhaseStart).getTime()/1000);
+        //durationsManager.add(signalGroup, lastPhase, new Date(generatedAtTime).getTime()/1000 - new Date(lastPhaseStart).getTime()/1000);
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
@@ -66,16 +66,16 @@ historicFileSystemReader.readAndParseSync()
     .then(() => {
         let b = process.hrtime(a);
         console.log(b);
-        predictionPublisher.setJSONDistributionEndpoint("distribution/fd", distributionStore.get("fd").getDistributions());
-        predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
-        predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
+        // predictionPublisher.setJSONDistributionEndpoint("distribution/fd", distributionStore.get("fd").getDistributions());
+        // predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
+        // predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
 
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
         historicFragmentParser.printDebugInfo();
         console.log("calculate predictions");
         // let analyticsList = analytics.calculate(1);
         let resultList = analytics.executeTestSuite();
-        predictionPublisher.setJSONDistributionEndpoint("analytics", resultList);
+        predictionPublisher.setJSONDistributionEndpoint("analytics", JSON.stringify(resultList));
         //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
 
     });
