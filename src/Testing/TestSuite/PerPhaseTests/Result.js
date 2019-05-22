@@ -253,9 +253,124 @@ class Analytics{
         //     counter++;
         // }
         // return gevonden;
-        return this.list;
+        return this.parseResultsAfterExecution(this.list);
+        //return this.list;
     }
 
+    //nu nog resultaten groeperen voordat ze worden teruggegeven door de executeTestSuite
+    parseResultsAfterExecution(list){
+        console.log("items in list after execution: "+list.length);
+        let distributionNames = ["fd","tfd","tgfd"];
+        let types = ["median","mean","mostCommon"];
+        let results = {};
+        for(let item of list){
+            if(!results[item.signalGroup]){
+                results[item.signalGroup] = {};
+            }
+            if(!results[item.signalGroup][item.signalPhase]){
+                results[item.signalGroup][item.signalPhase] = {};
+            }
+            for(let distributionName of distributionNames){
+                if(!results[item.signalGroup][item.signalPhase][distributionName]){
+                    results[item.signalGroup][item.signalPhase][distributionName] = {};
+                }
+                for(let type of types){
+                    if(!results[item.signalGroup][item.signalPhase][distributionName][type]){
+                        results[item.signalGroup][item.signalPhase][distributionName][type] = {
+                            abs_e: 0,
+                            abs_se: 0,
+                            rel_e: 0,
+                            abs_rel_me_mse_counter: 0,
+
+                            abs_e_with_minmax: 0,
+                            abs_se_with_minmax: 0,
+                            rel_e_with_minmax: 0,
+                            abs_rel_me_mse_with_minmax_counter: 0,
+
+                            abs_e_time_list: {},
+
+                            errors: 0
+                        };
+                    }
+                    Object.keys(item.AE).forEach((runNr) => {
+                        let a = item.AE[runNr][distributionName][type];
+                        if(a){
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_with_minmax+= ((a < 0) ? a*-1 : a);
+                            results[item.signalGroup][item.signalPhase][distributionName][type].rel_e_with_minmax+= ((a < 0) ? a*-1 : a)/item.secondsBeforeChange;
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_se_with_minmax+= a*a;
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter+=1;
+                            if(item.minEndTime !== item.maxEndTime){
+                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_e+= ((a < 0) ? a*-1 : a);
+                                results[item.signalGroup][item.signalPhase][distributionName][type].rel_e+= ((a < 0) ? a*-1 : a)/item.secondsBeforeChange;
+                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_se+= a*a;
+                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_rel_me_mse_counter+=1;
+                            }
+                            if(!results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)]){
+                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)] = [];
+                            }
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)].push({x: item.secondsBeforeChange, y: ((a < 0) ? a*-1 : a)});
+
+                        }
+                        else{
+                            results[item.signalGroup][item.signalPhase][distributionName][type].errors+= 1;
+                        }
+                    });
+                }
+            }
+        }
+        Object.keys(results).forEach((signalGroup) => {
+            Object.keys(results[signalGroup]).forEach((signalPhase) => {
+                for(let distributionName of distributionNames){
+                    for(let type of types){
+                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_counter !== 0){
+                            results[signalGroup][signalPhase][distributionName][type].abs_me =
+                                results[signalGroup][signalPhase][distributionName][type].abs_e
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_counter;
+                            results[signalGroup][signalPhase][distributionName][type].abs_mse =
+                                results[signalGroup][signalPhase][distributionName][type].abs_se
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_counter;
+                            results[signalGroup][signalPhase][distributionName][type].rel_me =
+                                results[signalGroup][signalPhase][distributionName][type].rel_e
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_counter;
+                        }
+                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter !== 0){
+                            results[signalGroup][signalPhase][distributionName][type].abs_me_with_minmax =
+                                results[signalGroup][signalPhase][distributionName][type].abs_e_with_minmax
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
+                        }
+                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter !== 0){
+                            results[signalGroup][signalPhase][distributionName][type].abs_mse_with_minmax =
+                                results[signalGroup][signalPhase][distributionName][type].abs_se_with_minmax
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
+                        }
+                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter !== 0){
+                            results[signalGroup][signalPhase][distributionName][type].rel_me_with_minmax =
+                                results[signalGroup][signalPhase][distributionName][type].rel_e_with_minmax
+                                / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
+                        }
+
+                        Object.keys(results[signalGroup][signalPhase][distributionName][type].abs_e_time_list).forEach((secondsBefore) => {
+                            //calculate mean
+                            let total = 0;
+                            let counter = 0;
+                            for(let item of results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore]){
+                                total+= item.y;
+                                counter++;
+                            }
+                            let mean = total/counter;
+                            if(!results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list){
+                                results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list = [];
+                            }
+                            results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list.push( {x: secondsBefore, y: mean});
+                        });
+                    }
+                }
+            });
+        });
+        return results;
+    }
+
+    //can be used to first group before splitting in parts for training
     transformListToGroupedList(){
         let grouped = {};
         for(let item of this.list){
