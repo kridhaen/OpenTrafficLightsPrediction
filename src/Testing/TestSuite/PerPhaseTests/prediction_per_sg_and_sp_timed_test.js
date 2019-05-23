@@ -1,23 +1,14 @@
-const n3 = require('n3');
 const DistributionStore = require('../../../Distributions/DistributionStore.js');
 const HistoricFileSystemReader = require('../../../Readers/HistoricFileSystemReader.js');
-const RealTimeReader = require('../../../Readers/RealTimeReader.js');
 const PredictionPublisher = require('../../../Publisher/PredictionPublisher.js');
 const FragmentParser = require('../../../Readers/FragmentParser.js');
 const DistributionManager = require('../../../Distributions/DistributionManager.js');
-const DurationsManager = require('../../../Distributions/DurationsManager.js');
-const PredictionManager = require('../../../Predictor/PredictionManager.js');
-const Helper = require('../../../Readers/Helper.js');
 const Analytics = require('./Result.js');
-const { DataFactory } = n3;
-const { namedNode, literal } = DataFactory;
 
-const datasetUrl = 'https://lodi.ilabt.imec.be/observer/rawdata/latest';
-const filepath =  "./previous_small";
+const filepath =  "./previous_6-to-23";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
-let durationsManager = new DurationsManager(70);
 
 let analytics = new Analytics(distributionStore);
 let observations = 0;
@@ -29,6 +20,7 @@ let a = process.hrtime();
 let timeDuration = 0;
 let timeCount = 0;
 let showCount = 0;
+console.log((process.memoryUsage().heapUsed / 1024 / 1024) +" MB");
 
 let historicFragmentParser = new FragmentParser();  //TODO: remove file?
 let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment, file) => {
@@ -37,9 +29,7 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
     //TODO: remove file param -> debugging
     await historicFragmentParser.handleFragment(fragment, file, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
-        //DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
         analytics.add(undefined, generatedAtTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, generatedAtTime, generatedAtTime, lastPhaseStart); //TODO: uitwerken
-        //durationsManager.add(signalGroup, lastPhase, new Date(generatedAtTime).getTime()/1000 - new Date(lastPhaseStart).getTime()/1000);
         changes++;
     }, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
@@ -65,16 +55,17 @@ predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
     .then(() => {
         let b = process.hrtime(a);
+        console.log((process.memoryUsage().heapUsed / 1024 / 1024) +" MB");
         console.log(b);
-        // predictionPublisher.setJSONDistributionEndpoint("distribution/fd", distributionStore.get("fd").getDistributions());
-        // predictionPublisher.setJSONDistributionEndpoint("distribution/tfd", distributionStore.get("tfd").getDistributions());
-        // predictionPublisher.setJSONDistributionEndpoint("distribution/tgfd", distributionStore.get("tgfd").getDistributions());
-
+        let c = process.hrtime();
         console.log("same: "+ same+"\nchanges: "+changes+"\nobservations: "+observations+"\nerrors in fragmentParser: "+(observations-changes-same)+"\ncleared NoEndYet: "+clearNoEndYet+"\n");
         historicFragmentParser.printDebugInfo();
         console.log("calculate predictions");
-        // let analyticsList = analytics.calculate(1);
         let resultList = analytics.executeTestSuite();
+        let d = process.hrtime(c);
+        console.log(d);
+        console.log((process.memoryUsage().heapUsed / 1024 / 1024) +" MB");
+
         predictionPublisher.setJSONDistributionEndpoint("analytics", JSON.stringify(resultList));
         //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
 

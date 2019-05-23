@@ -13,6 +13,14 @@ class Analytics{
         this.idGen = "0";
     }
 
+    _translateSignalGroup(signalgroup){
+        if(Number.isInteger(signalgroup)){
+            return signalgroup;
+        }
+        let words = signalgroup.split('/');
+        return words[words.length-1];
+    }
+
     clearNoEndYetList(signalGroup){
         if(this.noEndYet[signalGroup]){
             Object.keys(this.noEndYet[signalGroup]).forEach((item) => {
@@ -42,8 +50,8 @@ class Analytics{
             "signalGroup": signalGroup,
             "signalPhase": signalPhase,
             // "lastPhase": lastPhase,
-            "phaseEndDateTime": phaseEndDateTime,
-            "phaseStartDateTime": phaseStartDateTime,
+            "end": phaseEndDateTime,
+            "start": phaseStartDateTime,
             // "lastPhaseEndDateTime": lastPhaseEndDateTime,
             // "lastPhaseStartDateTime": lastPhaseStartDateTime,
             "minEndTime": minEndTime,
@@ -51,7 +59,7 @@ class Analytics{
             "observationTime": observationTime,
             "phaseDuration": undefined,
             "phaseLikelyTime": {},
-            "predictedDuration": {},
+            // "predictedDuration": {},
             "AE": {}
         };
         if(lastPhaseEndDateTime !== undefined){ //als op faseovergang -> geldt als eindtijd vorige fase -> invullen bij diegene die nog niet waren ingevuld
@@ -63,7 +71,7 @@ class Analytics{
 
             for(let i of this.noEndYet[signalGroup][lastPhase]){
                 i["phaseDuration"] = phaseDuration;
-                i["phaseEndDateTime"] = lastPhaseEndDateTime;
+                i["end"] = lastPhaseEndDateTime;
             }
             this.noEndYet[signalGroup][lastPhase] = [];
         }
@@ -81,8 +89,8 @@ class Analytics{
         //console.log(" -> clearedNoEndYetListEntries: "+this.clearedNoEndYetListEntries); //TODO:is noPhaseDuration + onSamePhaseResets -> hoe???
         //console.log(" -> list length: "+list.length);
         for(let i = 0; i < list.length; i++){
-            let { phaseStartDateTime, signalGroup, signalPhase, minEndTime, maxEndTime, observationTime} = list[i];
-            let observationUTC = Helper.splitDateInParts(phaseStartDateTime);
+            let { start, signalGroup, signalPhase, minEndTime, maxEndTime, observationTime} = list[i];
+            let observationUTC = Helper.splitDateInParts(start);
             let distributions = [
                 this.distributionStore.get("fd").get(signalGroup,signalPhase),
                 this.distributionStore.get("tfd").get(signalGroup,signalPhase,observationUTC["year"],observationUTC["month"],observationUTC["day"],observationUTC["hour"],Math.floor(observationUTC["minute"]/20)*20),
@@ -100,39 +108,39 @@ class Analytics{
                 if(!list[i]["phaseLikelyTime"][run][distributionNames[j]]){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]] = {};
                 }
-                if(!list[i]["predictedDuration"][run]){
-                    list[i]["predictedDuration"][run] = {};
-                }
-                if(!list[i]["predictedDuration"][run][distributionNames[j]]){
-                    list[i]["predictedDuration"][run][distributionNames[j]] = {};
-                }
+                // if(!list[i]["predictedDuration"][run]){
+                //     list[i]["predictedDuration"][run] = {};
+                // }
+                // if(!list[i]["predictedDuration"][run][distributionNames[j]]){
+                //     list[i]["predictedDuration"][run][distributionNames[j]] = {};
+                // }
 
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distributions[j], PredictionCalculator.calculateMedianDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMedianDuration);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["median"] = likelyTime;
-                    let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
-                    predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
-                    list[i]["predictedDuration"][run][distributionNames[j]]["median"] = predictedPhaseDuration;
+                    // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
+                    // predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
+                    // list[i]["predictedDuration"][run][distributionNames[j]]["median"] = predictedPhaseDuration;
                 }
             }
             //mean
             for(let j = 0; j < distributionNames.length; j++){
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distributions[j], PredictionCalculator.calculateMeanDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMeanDuration);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["mean"] = likelyTime;
-                    let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
-                    predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
-                    list[i]["predictedDuration"][run][distributionNames[j]]["mean"] = predictedPhaseDuration;
+                    // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
+                    // predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
+                    // list[i]["predictedDuration"][run][distributionNames[j]]["mean"] = predictedPhaseDuration;
                 }
             }
             //mostCommon
             for(let j = 0; j < distributionNames.length; j++){
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, phaseStartDateTime, distributions[j], PredictionCalculator.calculateMostCommonDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMostCommonDuration);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["mostCommon"] = likelyTime;
-                    let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(phaseStartDateTime).getTime();
-                    predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
-                    list[i]["predictedDuration"][run][distributionNames[j]]["mostCommon"] = predictedPhaseDuration;
+                    // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
+                    // predictedPhaseDuration = Math.round(predictedPhaseDuration/1000);
+                    // list[i]["predictedDuration"][run][distributionNames[j]]["mostCommon"] = predictedPhaseDuration;
                 }
             }
         }
@@ -142,7 +150,7 @@ class Analytics{
 
     calculateSecondsBeforeChange(run, list){
         for(let item of list){
-            item["secondsBeforeChange"] = (new Date(item.phaseEndDateTime).getTime() - new Date(item.observationTime).getTime())/1000;
+            item["secondsBeforeChange"] = (new Date(item.end).getTime() - new Date(item.observationTime).getTime())/1000;
             let deviations = {};
             let distributionNames = ["fd","tfd","tgfd"];
             let types = ["median","mean","mostCommon"];
@@ -158,7 +166,7 @@ class Analytics{
                     //     rel_a = a/rel;
                     // }
                     //TODO: afronding 200ms
-                    deviations[distributionNames[j]][types[k]] = new Date(item["phaseLikelyTime"][run][distributionNames[j]][types[k]]).getTime()/1000 - new Date(item["phaseEndDateTime"]).getTime()/1000+0.2;
+                    deviations[distributionNames[j]][types[k]] = new Date(item["phaseLikelyTime"][run][distributionNames[j]][types[k]]).getTime()/1000 - new Date(item["end"]).getTime()/1000+0.2;
                 }
             }
 
@@ -205,7 +213,7 @@ class Analytics{
                     //await temp.onLearnFile(fragment, file);
                     i++;
                     let item = observationsPerId[id][0];    //just 1, doesnt matter which because same phase data
-                    item && DistributionManager.storeInDistribution(item.phaseEndDateTime, item.phaseStartDateTime, item.signalGroup, item.signalPhase, this.distributionStore);
+                    item && DistributionManager.storeInDistribution(item.end, item.start, item.signalGroup, item.signalPhase, this.distributionStore);
                 }
                 fileRunner++;
             }
@@ -364,7 +372,9 @@ class Analytics{
                                 results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list = [];
                             }
                             results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list.push( {x: secondsBefore, y: mean});
+                            results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore] = undefined;   //cleanup
                         });
+                        results[signalGroup][signalPhase][distributionName][type].abs_e_time_list = undefined;  //cleanup
                     }
                 }
             });
