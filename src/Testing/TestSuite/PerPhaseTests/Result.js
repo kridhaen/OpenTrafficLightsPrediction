@@ -241,8 +241,6 @@ class Analytics{
 
     executeTestSuite(){
         console.log("start testsuite execution");
-        // let grouped = this.transformListToGroupedList();
-        // dan voor iedere in grouped
         let newList = [];
         for(let item of this.list){
             if(item.phaseDuration !== undefined){
@@ -250,29 +248,28 @@ class Analytics{
             }
         }
         this.list = newList;
-        this.testOnObservations(this.list, 10);
 
-        // let counter = 0;
-        // let gevonden = undefined;
-        // while(!gevonden && counter < this.list.length){
-        //     console.log(counter);
-        //     if(this.list[counter].minEndTime !== this.list[counter].maxEndTime){
-        //         gevonden = this.list[counter];
-        //     }
-        //     counter++;
-        // }
-        // return gevonden;
+        // let grouped = this.transformListToGroupedList();
+        let results = {};
+        // Object.keys(grouped).forEach((sg)=> {
+        //     Object.keys(grouped[sg]).forEach((sf) => {
+        //         this.testOnObservations(grouped[sg][sf], 10);
+        //         this.parseResultsAfterExecution(grouped[sg][sf], results);
+        //     });
+        // });
+        this.testOnObservations(this.list, 10);
         console.log("execution done");
-        return this.parseResultsAfterExecution(this.list);
-        //return this.list;
+        this.parseResultsAfterExecution(this.list, results);
+        return results;
+        // return this.list;
     }
 
     //nu nog resultaten groeperen voordat ze worden teruggegeven door de executeTestSuite
-    parseResultsAfterExecution(list){
+    parseResultsAfterExecution(list, results){
         console.log("items in list after execution: "+list.length);
         let distributionNames = ["fd","tfd","tgfd"];
         let types = ["median","mean","mostCommon"];
-        let results = {};
+        //let results = {};
         for(let item of list){
             if(!results[item.signalGroup]){
                 results[item.signalGroup] = {};
@@ -315,11 +312,15 @@ class Analytics{
                                 results[item.signalGroup][item.signalPhase][distributionName][type].abs_se+= a*a;
                                 results[item.signalGroup][item.signalPhase][distributionName][type].abs_rel_me_mse_counter+=1;
                             }
+                            // if(!results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)]){
+                            //     results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)] = [];
+                            // }
+                            // results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)].push({x: item.secondsBeforeChange, y: ((a < 0) ? a*-1 : a)}); //x counter en y optellen
                             if(!results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)]){
-                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)] = [];
+                                results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)] = [0,0];
                             }
-                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)].push({x: item.secondsBeforeChange, y: ((a < 0) ? a*-1 : a)});
-
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)][0] += ((a < 0) ? a*-1 : a); //1 counter en 0 optellen
+                            results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_time_list[Math.round(item.secondsBeforeChange)][1]++;
                         }
                         else{
                             results[item.signalGroup][item.signalPhase][distributionName][type].errors+= 1;
@@ -347,27 +348,24 @@ class Analytics{
                             results[signalGroup][signalPhase][distributionName][type].abs_me_with_minmax =
                                 results[signalGroup][signalPhase][distributionName][type].abs_e_with_minmax
                                 / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
-                        }
-                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter !== 0){
                             results[signalGroup][signalPhase][distributionName][type].abs_mse_with_minmax =
                                 results[signalGroup][signalPhase][distributionName][type].abs_se_with_minmax
                                 / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
-                        }
-                        if(results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter !== 0){
                             results[signalGroup][signalPhase][distributionName][type].rel_me_with_minmax =
                                 results[signalGroup][signalPhase][distributionName][type].rel_e_with_minmax
                                 / results[signalGroup][signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter;
                         }
 
-                        Object.keys(results[signalGroup][signalPhase][distributionName][type].abs_e_time_list).forEach((secondsBefore) => {
+                        Object.keys(results[signalGroup][signalPhase][distributionName][type].abs_e_time_list).forEach((secondsBefore) => { //kan al op voorhand optellen en counter !!!
                             //calculate mean
-                            let total = 0;
-                            let counter = 0;
-                            for(let item of results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore]){
-                                total+= item.y;
-                                counter++;
-                            }
-                            let mean = total/counter;
+                            // let total = 0;
+                            // let counter = 0;
+                            // for(let item of results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore]){
+                            //     total+= item.y;
+                            //     counter++;
+                            // }
+                            // let mean = total/counter;
+                            let mean = results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore][0] / results[signalGroup][signalPhase][distributionName][type].abs_e_time_list[secondsBefore][1];
                             if(!results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list){
                                 results[signalGroup][signalPhase][distributionName][type].abs_e_result_time_list = [];
                             }
@@ -379,7 +377,7 @@ class Analytics{
                 }
             });
         });
-        return results;
+        //return results;
     }
 
     //can be used to first group before splitting in parts for training

@@ -5,7 +5,7 @@ const FragmentParser = require('../../../Readers/FragmentParser.js');
 const DistributionManager = require('../../../Distributions/DistributionManager.js');
 const Analytics = require('./Result.js');
 
-const filepath =  "./previous_6-to-23";
+const filepath =  "./previous";
 
 let distributionStore = new DistributionStore();
 DistributionManager.createDistributions(distributionStore);
