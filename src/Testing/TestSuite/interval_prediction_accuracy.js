@@ -158,3 +158,5 @@ historicFileSystemReader.readAndParseSync()
         console.log("20%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.2));
         console.log("20%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.2));
     });
+
+//test to show the percentage of the minimum duration in the given interval relative to the maximum value in the interval or to the median value

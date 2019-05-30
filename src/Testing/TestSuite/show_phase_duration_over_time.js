@@ -50,3 +50,5 @@ historicFileSystemReader.readAndParseSync()
         predictionPublisher.setJSONDistributionEndpoint("durations", durations);
 
     });
+
+//output is all the phase durations chronologically for each signalGroup and signalPhase
