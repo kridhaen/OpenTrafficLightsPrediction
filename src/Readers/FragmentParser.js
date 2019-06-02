@@ -11,6 +11,7 @@ class FragmentParser{
         this.lastMaxEndTime = {};   //als maxEndTime van de vorige meting kleiner is dan van de huidige, en de fase is niet aangepast, dan ontbreken waarschijnlijk enkele fragmenten
         this.lastMinEndTime = {};
         this.lastObservation = {};
+        this.maxDidIncrease = {};
         this.showGeneratedAtTimeErrors = showGeneratedAtTimeErrors;
         this.showPhaseErrors = showPhaseErrors;
 
@@ -50,11 +51,12 @@ class FragmentParser{
             "prefixes": undefined,  //prefixes in trig rdf fragment
             "phaseStart": undefined,    //start of phase of current observation
             "lastPhaseStart": undefined,    //start of phase of last observation
-            "lastPhase": undefined  //phase of last observation
+            "lastPhase": undefined,  //phase of last observation
+            "maxDidIncrease": undefined //maxEndTime did increase for same phase
         };
     }
 
-    static _setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, phaseStart, lastPhaseStart, lastPhase){
+    static _setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, phaseStart, lastPhaseStart, lastPhase, maxDidIncrease){
         returnObject["signalGroup"] = signalGroup;
         returnObject["signalPhase"] = signalPhase;
         returnObject["signalState"] = signalState;
@@ -67,6 +69,7 @@ class FragmentParser{
         returnObject["phaseStart"] = phaseStart;
         returnObject["lastPhaseStart"] = lastPhaseStart;
         returnObject["lastPhase"] = lastPhase;
+        returnObject["maxDidIncrease"] = maxDidIncrease;
     };
 
     //TODO: remove file param -> debugging
@@ -92,6 +95,9 @@ class FragmentParser{
             }
             if(!this.lastObservation[quad.subject.value]){
                 this.lastObservation[quad.subject.value] = undefined;
+            }
+            if(!this.maxDidIncrease[quad.subject.value]){
+                this.maxDidIncrease[quad.subject.value] = {};
             }
             if(!this.realStartUp[quad.subject.value]){
                 this.realStartUp[quad.subject.value] = 0;
@@ -166,7 +172,7 @@ class FragmentParser{
                             if (this.lastPhase[signalGroup] !== signalPhase) {
                                 //phase change
                                 if (onObservationBeforeValidityCheck) { //dangerous, not checked validity of observation before phase change, data could be invalid (see checks)
-                                    FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                    FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup], this.maxDidIncrease[signalGroup][signalPhase]);
                                     onObservationBeforeValidityCheck(returnObject);
                                 }
                                 if(!error) {
@@ -194,7 +200,7 @@ class FragmentParser{
                                         this.lastMinEndTime[signalGroup] = -1; //minimale eindtijd laatste fragment
                                     } else {
                                         if (onPhaseChange) {
-                                            FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                            FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, generatedAtTime, this.phaseStart[signalGroup], this.lastPhase[signalGroup], this.maxDidIncrease[signalGroup][signalPhase]);
                                             onPhaseChange(returnObject);
                                         }
 
@@ -209,7 +215,7 @@ class FragmentParser{
                             } else {
                                 //same phase
                                 if (onObservationBeforeValidityCheck) { //dangerous, not checked validity of observation before phase change, data could be invalid (see checks)
-                                    FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                    FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup], this.maxDidIncrease[signalGroup][signalPhase]);
                                     onObservationBeforeValidityCheck(returnObject);
                                 }
                                 if(!error) {
@@ -223,6 +229,7 @@ class FragmentParser{
                                             || (this.lastMinEndTime[signalGroup] !== -1 && new Date(minEndTime).getTime() + 1005 < new Date(this.lastMinEndTime[signalGroup]).getTime()))
                                     ) {
                                         //maxEndTime can not increase for same phase, minEndTime can not decrease, if this is the case, it is not the same phase or an error occurred in the data
+                                        //if id does increase and it is correct, the time between observations can not be greater than 5 seconds (tolerance)
                                         this.lastPhase[signalGroup] = -1;   //reset
                                         this.phaseStart[signalGroup] = -1;
                                         this.showPhaseErrors && console.log("onSamePhaseError: " + file + " generatedAtTime: " + generatedAtTime + " maxEndTime: " + maxEndTime + " lastMaxEndTime: " + this.lastMaxEndTime[signalGroup] + " minEndTime: " + minEndTime + " lastMinEndTime: " + this.lastMinEndTime[signalGroup] + " last observation (gereratedAtTime): " + this.lastObservation[signalGroup]);
@@ -234,8 +241,11 @@ class FragmentParser{
                                         this.lastMaxEndTime[signalGroup] = -1;  //maximale eindtijd laatste fragment
                                         this.lastMinEndTime[signalGroup] = -1; //minimale eindtijd laatste fragment
                                     } else {
+                                        if(this.maxDidIncrease[signalGroup][signalPhase] !== true){ //see increase in maxEndTime only if higher than 1005 ms (tolerance)
+                                            this.maxDidIncrease[signalGroup][signalPhase] = new Date(maxEndTime).getTime() > new Date(this.lastMaxEndTime[signalGroup]).getTime() + 1005;
+                                        }
                                         if (onSamePhase) {
-                                            FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup]);
+                                            FragmentParser._setReturnObject(returnObject, signalGroup, signalPhase, signalState, generatedAtTime, minEndTime, maxEndTime, observation, store, prefixes, this.phaseStart[signalGroup], this.phaseStart[signalGroup], this.lastPhase[signalGroup], this.maxDidIncrease[signalGroup][signalPhase]);
                                             onSamePhase(returnObject);
                                         }
                                         this.lastMaxEndTime[signalGroup] = maxEndTime;  //maximale eindtijd laatste fragment
@@ -271,7 +281,7 @@ class FragmentParser{
             });
         }
         if(afterHandle){
-            FragmentParser._setReturnObject(returnObject, undefined, undefined, undefined, undefined, undefined, undefined, undefined, store, prefixes, undefined, undefined);
+            FragmentParser._setReturnObject(returnObject, undefined, undefined, undefined, undefined, undefined, undefined, undefined, store, prefixes, undefined, undefined, undefined, undefined);
             afterHandle(returnObject);
         }
     }
