@@ -4,7 +4,7 @@
   "description": "Predicting phase durations of dynamically programmed traffic lights from OpenTrafficLights",
   "main": "main.js",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "n3": "^1.0.5"
