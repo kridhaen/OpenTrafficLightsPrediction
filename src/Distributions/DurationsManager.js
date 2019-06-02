@@ -22,7 +22,8 @@ class DurationsManager {
         if(this.durations[signalGroup]
             && this.durations[signalGroup][signalPhase]
         ){
-            return this.durations[signalGroup][signalPhase].length >= this.historySize ? this.returnLastX(70, this.durations[signalGroup][signalPhase]) : undefined;
+            // return this.durations[signalGroup][signalPhase].length >= this.historySize ? this.returnLastX(15, this.durations[signalGroup][signalPhase]) : undefined;
+            return this.durations[signalGroup][signalPhase];
         }
     }
 
