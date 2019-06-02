@@ -11,7 +11,7 @@ const Analytics = require('../Analytics/Analytics.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
-const filepath =  "./previous_small";
+const filepath =  "./latest";
 
 let predictionPublisher = new PredictionPublisher(8080);
 
