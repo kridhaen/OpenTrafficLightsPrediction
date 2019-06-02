@@ -6,7 +6,7 @@ const Helper = require('../Readers/Helper.js');
 //TODO: confidence -> vb %dat de predictedValue wel degelijk voorkwam tov alle voorkomens (die ook nog kunnen voorkomen, dus in futureDistribution)
 class PredictionManager{
     //simple median value
-    static predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, predictionCalculatorFunction){
+    static predictLikelyTime(signalGroup, signalPhase, generatedAtTime, minEndTime, maxEndTime, phaseStart, distribution, predictionCalculatorFunction, maxDidIncrease){
         try {
             if (distribution && Object.keys(distribution).length > 0) {
                 let result = new Date(phaseStart);
@@ -33,6 +33,8 @@ class PredictionManager{
                     likelyTime = minEndTime;
                 } else if (likelyTime!== undefined && likelyTime < minEndTime) {
                     likelyTime = minEndTime;
+                } else if (likelyTime !== undefined && !maxDidIncrease && likelyTime > maxEndTime ) {
+                    likelyTime = maxEndTime;
                 // } else if (likelyTime !== undefined && new Date(likelyTime).getTime() > new Date(maxEndTime).getTime()+210 && new Date(likelyTime).getTime() < new Date(maxEndTime).getTime() + 5000 ) {
                 //     likelyTime = maxEndTime;
                 }
