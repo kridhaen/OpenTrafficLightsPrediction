@@ -50,6 +50,24 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
     }
 });
 
+let outputToCSV = (data) => {
+    let output = "MAE,,FD,,,TFD,,,TGFD,,\n";
+    output += "signalGroup,signalPhase,median,mean,modus,median,mean,modus,median,mean,modus\n";
+    Object.keys(data).forEach((signalGroup) => {
+        Object.keys(data[signalGroup]).forEach((signalPhase) => {
+            output+=signalGroup+","+signalPhase;
+            Object.keys(data[signalGroup][signalPhase]).forEach((distributionType) => {
+                Object.keys(data[signalGroup][signalPhase][distributionType]).forEach((predictionType) => {
+                    let rounded = Math.round(data[signalGroup][signalPhase][distributionType][predictionType].abs_me*100)/100;
+                    output+=","+rounded;
+                });
+            });
+            output+="\n";
+        });
+    });
+   return output;
+};
+
 let predictionPublisher = new PredictionPublisher(8080);
 predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
@@ -67,6 +85,6 @@ historicFileSystemReader.readAndParseSync()
         console.log((process.memoryUsage().heapUsed / 1024 / 1024) +" MB");
 
         predictionPublisher.setJSONDistributionEndpoint("analytics", JSON.stringify(resultList));
-        //HistoricFileSystemReader.printToFile({analyticsList}, "analyticsList", ".txt");
+        HistoricFileSystemReader.printToFile(outputToCSV(resultList), "per_phase", ".txt");
 
     });
