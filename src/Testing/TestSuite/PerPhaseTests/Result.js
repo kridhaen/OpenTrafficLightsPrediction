@@ -49,17 +49,13 @@ class Analytics{
             "id": this.idGen,
             "signalGroup": signalGroup,
             "signalPhase": signalPhase,
-            // "lastPhase": lastPhase,
             "end": phaseEndDateTime,
             "start": phaseStartDateTime,
-            // "lastPhaseEndDateTime": lastPhaseEndDateTime,
-            // "lastPhaseStartDateTime": lastPhaseStartDateTime,
             "minEndTime": minEndTime,
             "maxEndTime": maxEndTime,
             "observationTime": observationTime,
             "phaseDuration": undefined,
             "phaseLikelyTime": {},
-            // "predictedDuration": {},
             "AE": {}
         };
         if(lastPhaseEndDateTime !== undefined){ //als op faseovergang -> geldt als eindtijd vorige fase -> invullen bij diegene die nog niet waren ingevuld
