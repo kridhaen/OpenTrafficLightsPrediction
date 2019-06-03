@@ -11,6 +11,7 @@ class Analytics{
         this.noEndYet = {};
         this.clearedNoEndYetListEntries = 0;
         this.idGen = "0";
+        this.maxDidIncrease = {};
     }
 
     _translateSignalGroup(signalgroup){
@@ -32,7 +33,7 @@ class Analytics{
 
     //TODO: lastphase or signalPhase???
     //phaseEndDateTime never given, phase doesn't know when he will end, only if the previous phase ended in lastPhaseEndDateTime
-    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, lastPhaseEndDateTime, lastPhaseStartDateTime){
+    add(phaseEndDateTime, phaseStartDateTime, signalGroup, signalPhase, lastPhase, minEndTime, maxEndTime, observationTime, lastPhaseEndDateTime, lastPhaseStartDateTime, maxDidIncrease){
         if(!this.noEndYet[signalGroup]){
             this.noEndYet[signalGroup] = {};
         }
@@ -41,6 +42,12 @@ class Analytics{
         }
         if(!this.noEndYet[signalGroup][lastPhase]){ //bij change is phaseEndDateTime al ingevuld en dus niet nodig, bij same is last = signalPhase en is bovenstaande voldoende
             this.noEndYet[signalGroup][lastPhase] = [];
+        }
+        if(!this.maxDidIncrease[signalGroup]){
+            this.maxDidIncrease[signalGroup] = {};
+        }
+        if(this.maxDidIncrease[signalGroup][signalPhase] !== true){
+            this.maxDidIncrease[signalGroup][signalPhase] = maxDidIncrease;
         }
         if(lastPhaseEndDateTime !== undefined){
             this.idGen = (Number.parseInt(this.idGen, 10) +1) + "";
@@ -111,7 +118,7 @@ class Analytics{
                 //     list[i]["predictedDuration"][run][distributionNames[j]] = {};
                 // }
 
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMedianDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMedianDuration, this.maxDidIncrease[signalGroup][signalPhase]);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["median"] = likelyTime;
                     // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
@@ -121,7 +128,7 @@ class Analytics{
             }
             //mean
             for(let j = 0; j < distributionNames.length; j++){
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMeanDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMeanDuration, this.maxDidIncrease[signalGroup][signalPhase]);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["mean"] = likelyTime;
                     // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
@@ -131,7 +138,7 @@ class Analytics{
             }
             //mostCommon
             for(let j = 0; j < distributionNames.length; j++){
-                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMostCommonDuration);
+                let likelyTime = PredictionManager.predictLikelyTime(signalGroup, signalPhase, observationTime, minEndTime, maxEndTime, start, distributions[j], PredictionCalculator.calculateMostCommonDuration, this.maxDidIncrease[signalGroup][signalPhase]);
                 if(likelyTime !== undefined){
                     list[i]["phaseLikelyTime"][run][distributionNames[j]]["mostCommon"] = likelyTime;
                     // let predictedPhaseDuration = new Date(likelyTime).getTime() - new Date(start).getTime();
