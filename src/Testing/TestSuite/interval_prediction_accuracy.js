@@ -127,6 +127,29 @@ let calculateDistributionsInterval = (dist, part) => {
     return percentages/distributions;
 };
 
+let calculateMedianDuration = (dist) => {
+    let distributions = 0;
+    let medians = 0;
+
+    let calculator = (distribution) => {
+        if(isObject(distribution) && isNumber(distribution[Object.keys(distribution)[0]]) ){
+            distributions++;
+            let median = PredictionCalculator.calculateMedianDuration(distribution);
+            medians += median;
+        }
+        else{
+            Object.keys(distribution).forEach((item) => {
+                if(item !== "https://w3id.org/opentrafficlights/thesauri/signalphase/0"){
+                    calculator(distribution[item]);
+                }
+            });
+        }
+    };
+
+    calculator(dist);
+    return medians/distributions;
+};
+
 let predictionPublisher = new PredictionPublisher(8080);
 predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
@@ -157,6 +180,8 @@ historicFileSystemReader.readAndParseSync()
         console.log("20%fd: "+calculateDistributionsInterval(distributionStore.get("fd").getDistributions(), 0.2));
         console.log("20%tfd: "+calculateDistributionsInterval(distributionStore.get("tfd").getDistributions(), 0.2));
         console.log("20%tgfd: "+calculateDistributionsInterval(distributionStore.get("tgfd").getDistributions(), 0.2));
+        console.log("\nmedian durations:");
+        console.log(calculateMedianDuration(distributionStore.get("tfd").getDistributions()));
     });
 
 //test to show the percentage of the minimum duration in the given interval relative to the maximum value in the interval or to the median value
