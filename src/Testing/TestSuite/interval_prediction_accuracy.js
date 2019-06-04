@@ -133,9 +133,11 @@ let calculateMedianDuration = (dist) => {
 
     let calculator = (distribution) => {
         if(isObject(distribution) && isNumber(distribution[Object.keys(distribution)[0]]) ){
-            distributions++;
             let median = PredictionCalculator.calculateMedianDuration(distribution);
-            medians += median;
+            if(median > 4){
+                distributions++;
+                medians += median;
+            }
         }
         else{
             Object.keys(distribution).forEach((item) => {
