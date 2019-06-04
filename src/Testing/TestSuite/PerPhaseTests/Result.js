@@ -263,6 +263,7 @@ class Analytics{
         this.testOnObservations(this.list, 10);
         console.log("execution done");
         this.parseResultsAfterExecution(this.list, results);
+        console.log(this.maxDidIncrease);
         return results;
         // return this.list;
     }
