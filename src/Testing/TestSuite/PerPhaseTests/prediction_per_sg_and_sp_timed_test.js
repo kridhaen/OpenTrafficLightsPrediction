@@ -51,15 +51,17 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
 });
 
 let outputToCSV = (data) => {
-    let output = "MAE,,FD,,,TFD,,,TGFD,,\n";
-    output += "signalGroup,signalPhase,median,mean,modus,median,mean,modus,median,mean,modus\n";
+    let output = "MAE,,,,,,,,,FD,,,,,,,,,TFD,,,,,,,,,TGFD,,,,,,,,\n";
+    output += "signalGroup,signalPhase,median,,,mean,,,modus,,,median,,,mean,,,modus,,,median,,,mean,,,modus,,\n";
     Object.keys(data).forEach((signalGroup) => {
         Object.keys(data[signalGroup]).forEach((signalPhase) => {
             output+=signalGroup+","+signalPhase;
             Object.keys(data[signalGroup][signalPhase]).forEach((distributionType) => {
                 Object.keys(data[signalGroup][signalPhase][distributionType]).forEach((predictionType) => {
                     let rounded = Math.round(data[signalGroup][signalPhase][distributionType][predictionType].abs_me*100)/100;
-                    output+=","+rounded;
+                    let rel = Math.round(data[signalGroup][signalPhase][distributionType][predictionType].rel_me*1000)/1000;
+                    let rme =  Math.round(data[signalGroup][signalPhase][distributionType][predictionType].abs_mse*100)/100;
+                    output+=","+rounded+","+rel+","+rme;
                 });
             });
             output+="\n";
