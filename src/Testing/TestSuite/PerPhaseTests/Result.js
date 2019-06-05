@@ -307,12 +307,12 @@ class Analytics{
                         let a = item.AE[runNr][distributionName][type];
                         if(a){
                             results[item.signalGroup][item.signalPhase][distributionName][type].abs_e_with_minmax+= ((a < 0) ? a*-1 : a);
-                            results[item.signalGroup][item.signalPhase][distributionName][type].rel_e_with_minmax+= ((a < 0) ? a*-1 : a)/item.secondsBeforeChange;
+                            results[item.signalGroup][item.signalPhase][distributionName][type].rel_e_with_minmax+= ((a < 0) ? a*-1 : a)/item.phaseDuration; //item.secondsBeforeChange will go to 0
                             results[item.signalGroup][item.signalPhase][distributionName][type].abs_se_with_minmax+= a*a;
                             results[item.signalGroup][item.signalPhase][distributionName][type].abs_rel_me_mse_with_minmax_counter+=1;
                             if(item.minEndTime !== item.maxEndTime){
                                 results[item.signalGroup][item.signalPhase][distributionName][type].abs_e+= ((a < 0) ? a*-1 : a);
-                                results[item.signalGroup][item.signalPhase][distributionName][type].rel_e+= ((a < 0) ? a*-1 : a)/item.secondsBeforeChange;
+                                results[item.signalGroup][item.signalPhase][distributionName][type].rel_e+= ((a < 0) ? a*-1 : a)/item.phaseDuration;
                                 results[item.signalGroup][item.signalPhase][distributionName][type].abs_se+= a*a;
                                 results[item.signalGroup][item.signalPhase][distributionName][type].abs_rel_me_mse_counter+=1;
                             }
