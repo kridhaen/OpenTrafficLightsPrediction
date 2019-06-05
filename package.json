@@ -15,7 +15,8 @@
   },
   "scripts": {
     "start": "node main.js",
-    "test": "jest"
+    "test": "jest",
+    "inMemoryErrorCalculation": "node --max-old-space-size=14000 .\\src\\Testing\\TestSuite\\PerPhaseTests\\prediction_per_sg_and_sp_timed_test.js"
   },
   "jest": {
     "collectCoverage": true

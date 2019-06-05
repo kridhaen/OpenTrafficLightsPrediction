@@ -51,7 +51,7 @@ let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fra
 });
 
 let outputToCSV = (data) => {
-    let output = "MAE,,,,,,,,,FD,,,,,,,,,TFD,,,,,,,,,TGFD,,,,,,,,\n";
+    let output = "MAE,,FD,,,,,,,,,TFD,,,,,,,,,TGFD,,,,,,,,\n";
     output += "signalGroup,signalPhase,median,,,mean,,,modus,,,median,,,mean,,,modus,,,median,,,mean,,,modus,,\n";
     Object.keys(data).forEach((signalGroup) => {
         Object.keys(data[signalGroup]).forEach((signalPhase) => {
