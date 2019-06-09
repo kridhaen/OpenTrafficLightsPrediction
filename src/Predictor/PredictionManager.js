@@ -22,7 +22,10 @@ class PredictionManager{
                 //if futureDistribution = empty -> predictedDuration = undefined
                 let likelyTime = undefined;
 
-                let predictedDuration = predictionCalculatorFunction(futureDistribution);
+                let predictedDuration = predictionCalculatorFunction(distribution);
+                if(predictedDuration < elapsedDuration){                                    //only use future distribution if normal prediction is lower than current duration
+                    predictedDuration = predictionCalculatorFunction(futureDistribution);
+                }
                 // let distributionSize = Helper.countObservationsInDistribution(distribution);
                 // console.log("size: "+distributionSize);   //TODO: log
                 if(predictedDuration !== undefined){
