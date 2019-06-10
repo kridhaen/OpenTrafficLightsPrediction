@@ -12,15 +12,15 @@ const Analytics = require('../../Analytics/Result.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
-const filepath =  "./previous_small_2019-06-07";
+const filepath =  "./previous";
 
 let durations = {};
 
-let historicFragmentParser = new FragmentParser();  //TODO: remove file?
+let historicFragmentParser = new FragmentParser(false, false);
 let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment, file) => {
 
     //TODO: remove file param -> debugging
-    await historicFragmentParser.handleFragment(fragment, file, (returnObject) => {
+    await historicFragmentParser.handleFragment(fragment, undefined, (returnObject) => {
         let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
         if(!durations[signalGroup]){
             durations[signalGroup] = {};
