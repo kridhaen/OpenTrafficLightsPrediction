@@ -90,3 +90,5 @@ historicFileSystemReader.readAndParseSync()
         HistoricFileSystemReader.printToFile(outputToCSV(resultList), "per_phase", ".txt");
 
     });
+
+//full testsuite to calculate error of predictions
