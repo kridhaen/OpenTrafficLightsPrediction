@@ -12,8 +12,7 @@ const Analytics = require('../../Analytics/Result.js');
 const { DataFactory } = n3;
 const { namedNode, literal } = DataFactory;
 
-//const filepath = "./previous";
-const filepath =  "./previous";
+const filepath =  "./previous_small_2019-06-07";
 
 let durations = {};
 
@@ -46,7 +45,7 @@ predictionPublisher.start();
 historicFileSystemReader.readAndParseSync()
     .then(() => {
         console.log("publishing");
-        console.log(durations);
+        // console.log(durations);
         predictionPublisher.setJSONDistributionEndpoint("durations", durations);
 
     });

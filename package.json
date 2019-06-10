@@ -18,7 +18,7 @@
     "test": "jest",
     "inMemoryErrorCalculation": "node --max-old-space-size=14000 .\\src\\Testing\\TestSuite\\PerPhaseTests\\prediction_per_sg_and_sp_timed_test.js",
     "intervalPredictionAccuracyCalculation": "node --max-old-space-size=14000 .\\src\\Testing\\TestSuite\\interval_prediction_accuracy.js",
-    "showPhaseDurationsOverTime": "node --max-old-space-size=14000 .\\src\\Testing\\TestSuite\\show_phase_durations_over_time.js"
+    "showPhaseDurationOverTime": "node --max-old-space-size=14000 .\\src\\Testing\\TestSuite\\show_phase_duration_over_time.js"
   },
   "jest": {
     "collectCoverage": true
