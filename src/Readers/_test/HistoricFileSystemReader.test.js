@@ -13,10 +13,10 @@ test("dataset contains no invalid observations", () => {
     const testFn = jest.fn();
 
 
-    let historicFragmentParser = new FragmentParser();
+    let historicFragmentParser = new FragmentParser(false, false);
     let historicFileSystemReader = new HistoricFileSystemReader(filepath, async (fragment) => {
 
-        return await historicFragmentParser.handleFragment(fragment, (returnObject) => {
+        return await historicFragmentParser.handleFragment(fragment, undefined,(returnObject) => {
             let { signalGroup, signalPhase, generatedAtTime, lastPhaseStart, lastPhase, minEndTime, maxEndTime } = returnObject;
             DistributionManager.storeInDistribution(generatedAtTime, lastPhaseStart, signalGroup, lastPhase, distributionStore);    //correct
             expect(new Date(generatedAtTime).getTime() < new Date(maxEndTime).getTime()).toBeTruthy();
