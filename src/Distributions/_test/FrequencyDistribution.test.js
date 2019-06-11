@@ -9,7 +9,7 @@ test('FrequencyDistribution: add', () => {
     frequencyDistribution.add("group1","phase2","15");
     frequencyDistribution.add("group2","phase1","10");
     frequencyDistribution.add("group2","phase1","30");
-    expect(frequencyDistribution.getDistributions()["group1"]["phase1"]["10"])
+    expect(frequencyDistribution.getDistributions()["group1"]["phase1"]["10"]).toEqual(2);
 });
 
 test('FrequencyDistribution: add + getDistributions', () => {

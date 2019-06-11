@@ -35,6 +35,20 @@ class Helper{
         result["year"] = toDate.getUTCFullYear();
         return result;
     }
+
+    static countObservationsInDistribution(distribution){
+        let count = 0;
+        let keys = Object.keys(distribution);
+        for(let i = 0; i < keys.length; i++){
+            count += distribution[keys[i]];
+        }
+        if(keys.length > 0){
+            return count / keys.length;
+        }
+        else{
+            return 0;
+        }
+    }
 }
 
 module.exports = Helper;
