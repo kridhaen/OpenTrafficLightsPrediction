@@ -108,7 +108,7 @@ test('predictLikelyTime: min < likely < max and generatedAtTime in distribution'
     let testTime = "2019-04-13T16:57:31.000Z";
     let phaseStart = testTime;
     let generatedAtTime1 = new Date(new Date(testTime).getTime() + 5000).toISOString();
-    let generatedAtTime2 = new Date(new Date(testTime).getTime() + 15000).toISOString();
+    let generatedAtTime2 = new Date(new Date(testTime).getTime() + 16000).toISOString();
     frequencyDistribution.add(signalGroup, signalPhase, duration1);
     frequencyDistribution.add(signalGroup, signalPhase, duration2);
     let minEndTime = new Date(new Date(testTime).getTime() + 5000).toISOString();
