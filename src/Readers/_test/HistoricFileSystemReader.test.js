@@ -4,7 +4,7 @@ const DistributionManager = require('../../Distributions/DistributionManager.js'
 const DistributionStore = require('../../Distributions/DistributionStore.js');
 
 
-const filepath =  "./previous_small";
+const filepath =  "./src/Readers/__mocks__/previous_test";
 
 test("dataset contains no invalid observations", () => {
     let distributionStore = new DistributionStore();
