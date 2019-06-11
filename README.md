@@ -21,9 +21,17 @@ To test a dataset, copy 'previous' files to folder '/previous' and run following
 
 * Full prediction error testsuite:
 >npm inMemoryErrorCalculation
+Creates testserver that publishes results on port 8080/analytics
+A csv file with the most important results will be created in the main folder: per_phase.txt
+This file can be imported in Excel as csv (, seperated)
 * View phase durations over time:
 >npm showPhaseDurationsOverTime
+Creates server on port 8081/durations
+Publishes for each signalgroup and signalphase arrays with the phase duration and phase start.
 * Show prediction error for given interval:
 >npm intervalPredictionAccuracyCalculation
+Starts server on port 8080,
+Logs the errors % of the median duration that can be predited with a given chance
+Publishes the distributions on /distribution/fd , /distribution/tfd , /distribution/tgfd
 
 The results of the error calculations can be visualized by https://github.com/kridhaen/OpenTrafficLightsDistributionsVisualizer
